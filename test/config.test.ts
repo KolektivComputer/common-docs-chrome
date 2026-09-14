@@ -4,6 +4,7 @@ import {
   defineDocsChrome,
   findNavItem,
   pageLabelFor,
+  resolveSwitchers,
   visibilityCss,
 } from '../src/core/config.js';
 
@@ -29,6 +30,30 @@ const config = defineDocsChrome({
     { id: 'js', label: 'JS' },
   ],
   frameworks: [{ id: 'svelte', label: 'Svelte' }],
+});
+
+const scriptConfig = defineDocsChrome({
+  name: 'Keel',
+  description: 'Generic switchers.',
+  siteUrl: 'https://keel.example',
+  defaultTheme: 'catppuccin-mocha',
+  nav: [],
+  defaultLang: 'ts',
+  langs: [
+    { id: 'ts', label: 'TS' },
+    { id: 'js', label: 'JS' },
+  ],
+  switchers: [
+    {
+      id: 'gradle',
+      label: 'Build script',
+      default: 'kts',
+      options: [
+        { id: 'kts', label: 'Kotlin' },
+        { id: 'groovy', label: 'Groovy' },
+      ],
+    },
+  ],
 });
 
 describe('defineDocsChrome', () => {
@@ -73,11 +98,86 @@ describe('navigation helpers', () => {
   });
 });
 
+describe('resolveSwitchers', () => {
+  it('derives the implicit lang switcher from langs', () => {
+    const [lang] = resolveSwitchers(config);
+    expect(lang).toEqual({
+      id: 'lang',
+      label: 'Language',
+      options: config.langs,
+      default: undefined,
+    });
+  });
+
+  it('appends custom switchers after the implicit lang switcher', () => {
+    const switchers = resolveSwitchers(scriptConfig);
+    expect(switchers.map((switcher) => switcher.id)).toEqual(['lang', 'gradle']);
+    expect(switchers[1]?.default).toBe('kts');
+  });
+
+  it('omits the implicit lang switcher when no langs are configured', () => {
+    const noLangs = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+    });
+    expect(resolveSwitchers(noLangs)).toEqual([]);
+  });
+
+  it('ignores reserved ids so built-in controls stay authoritative', () => {
+    const reserved = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      switchers: [
+        { id: 'lang', options: [{ id: 'a', label: 'A' }] },
+        { id: 'framework', options: [{ id: 'b', label: 'B' }] },
+        { id: 'theme', options: [{ id: 'c', label: 'C' }] },
+        { id: 'codeTheme', options: [{ id: 'd', label: 'D' }] },
+        { id: 'gradle', options: [{ id: 'kts', label: 'Kotlin' }] },
+      ],
+    });
+    expect(resolveSwitchers(reserved).map((switcher) => switcher.id)).toEqual(['gradle']);
+  });
+
+  it('skips switchers with no options', () => {
+    const empty = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      switchers: [{ id: 'gradle', options: [] }],
+    });
+    expect(resolveSwitchers(empty)).toEqual([]);
+  });
+});
+
 describe('visibilityCss', () => {
   it('emits panel rules for langs and frameworks', () => {
     const css = visibilityCss(config);
     expect(css).toContain('[data-lang-panel],[data-framework-panel]{display:none}');
     expect(css).toContain('html[data-lang="ts"] [data-lang-panel="ts"]');
     expect(css).toContain('html[data-framework="svelte"] [data-framework-panel="svelte"]');
+  });
+
+  it('emits base and reveal rules for a custom switcher', () => {
+    const css = visibilityCss(scriptConfig);
+    expect(css).toContain('[data-lang-panel],[data-gradle-panel],[data-framework-panel]{display:none}');
+    expect(css).toContain('html[data-lang="ts"] [data-lang-panel="all"]');
+    expect(css).toContain('html[data-gradle="kts"] [data-gradle-panel="all"]');
+    expect(css).toContain('html[data-gradle="kts"] [data-gradle-panel="kts"]{display:block}');
+    expect(css).toContain('html[data-gradle="groovy"] [data-gradle-panel="groovy"]{display:block}');
+  });
+
+  it('keeps the exact legacy lang selectors when a custom switcher is present', () => {
+    const css = visibilityCss(scriptConfig);
+    expect(css).toContain(
+      'html[data-lang="ts"] [data-lang-panel="all"],html[data-lang="ts"] [data-lang-panel="ts"]{display:block}',
+    );
   });
 });

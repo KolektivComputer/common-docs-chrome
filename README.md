@@ -124,6 +124,16 @@ export const docs = defineDocsChrome({
     { id: 'compose', label: 'Compose' },
     { id: 'web', label: 'Web' },
   ],
+  switchers: [
+    {
+      id: 'gradle',
+      label: 'Build script',
+      options: [
+        { id: 'kts', label: 'Kotlin' },
+        { id: 'groovy', label: 'Groovy' },
+      ],
+    },
+  ],
 });
 ```
 
@@ -180,11 +190,14 @@ const { frontmatter } = Astro.props;
 Config:
 
 - `DocsChromeConfig`, `NavSection`, `NavItem`, `FooterConfig`, `FooterLink`,
-  `RepoConfig`, `BuiltByConfig`
+  `RepoConfig`, `BuiltByConfig`, `SwitcherConfig`, `SwitcherOption`
 - `defineDocsChrome(config)` — fills defaults, returns a normalised config
 - `pageLabelFor(config, pathname)`, `findNavItem(config, pathname)`
-- `visibilityCss(config)` — `[data-lang-panel]` / `[data-framework-panel]` rules
-- `DEFAULT_CODE_THEME`, `DEFAULT_THEME_FAMILY`, `DEFAULT_BUILT_BY`
+- `resolveSwitchers(config)` — implicit `lang` plus every generic switcher
+- `visibilityCss(config)` — `[data-lang-panel]` / `[data-<id>-panel]` /
+  `[data-framework-panel]` rules
+- `RESERVED_SWITCHER_IDS`, `DEFAULT_CODE_THEME`, `DEFAULT_THEME_FAMILY`,
+  `DEFAULT_BUILT_BY`
 
 Themes:
 
@@ -203,7 +216,11 @@ Preferences:
 - `ChromePrefs`, `PrefOptions`, `PrefKeys`, `PREF_KEYS`, `DEFAULT_CODE_THEME`
 - `readPrefs(options)`, `applyPrefs(prefs, options)`,
   `syncControls(root?, options)`, `initChrome(options)`
-- `noFlashScript` (inline `<head>` string), `buildNoFlashScript(keys?)`
+- `switcherStorageKey(id)`, `switcherPrefValue(id)`
+- `initToggleRelevance(root?)`, `toggleRelevanceScript`,
+  `TOGGLE_RELEVANCE_ATTR`
+- `noFlashScript` (inline `<head>` string),
+  `buildNoFlashScript(keys?, switchers?)`
 
 Shiki:
 
@@ -229,6 +246,7 @@ Every component lives at `@kolektiv/common-docs-chrome/astro/<Name>.astro`:
 | `Footer.astro` | Footer with links and the built-by mark |
 | `ThemePicker.astro` | Site + code theme popover grouped by family |
 | `LangToggle.astro` | Language switch (renders only when `langs` is set) |
+| `Switcher.astro` | Generic segmented switcher (renders a `SwitcherConfig`) |
 | `FrameworkPicker.astro` | Framework switch (renders only when `frameworks` is set) |
 | `ScmMenu.astro` | Source-control menu (renders when `scm`/`repo` is set) |
 | `Mark.astro` | Logo/mark image, with the `@kolektiv/brand-core` icon mark as fallback |
@@ -256,10 +274,11 @@ component names to import paths).
 | `themeFamilies` | `ThemeFamily[]` | all | Restrict + order families in the picker. |
 | `themeFamily` | `ThemeFamily` | `site` | Family assigned to `themes` entries. |
 | `themes` | `ChromeTheme[]` | `[]` | Site-specific themes (override by id). |
-| `langs` | `{ id, label }[]` | — | Enables `LangToggle`. |
+| `langs` | `{ id, label }[]` | — | Enables `LangToggle` (the implicit `lang` switcher). |
 | `frameworks` | `{ id, label }[]` | — | Enables `FrameworkPicker`. |
 | `defaultLang` | `string` | first `langs` | SSR default. |
 | `defaultFramework` | `string` | first `frameworks` | SSR default. |
+| `switchers` | `SwitcherConfig[]` | `[]` | Extra generic switchers (see below). |
 | `scm` | `FooterLink[]` | derived from `repo` | Source-control menu links. |
 | `footer.links` | `FooterLink[]` | `[]` | Footer link column. |
 | `footer.copyright` | `string` | `© {year} Kolektiv Computing` | `{year}` is replaced. |
@@ -326,14 +345,77 @@ selected by `data-code-theme`:
 
 `ThemePicker` offers `Follow site theme` plus every registered theme.
 
+## Generic switchers
+
+Besides the language pair and the framework dropdown, a site can declare any
+number of named either/or (or n-option) switches — for example a `gradle`
+switch between `kts` and `groovy`:
+
+```ts
+switchers: [
+  {
+    id: 'gradle',
+    label: 'Build script',
+    options: [
+      { id: 'kts', label: 'Kotlin' },
+      { id: 'groovy', label: 'Groovy' },
+    ],
+  },
+],
+```
+
+`SwitcherConfig` is `{ id, label?, options: { id, label }[], default? }`.
+`resolveSwitchers(config)` returns the implicit `lang` switcher (derived from
+`langs`, when set) followed by every configured switcher; empty-option switchers
+are dropped and the reserved ids `lang`, `framework`, `theme` and `codeTheme`
+are ignored, because those are owned by `LangToggle`, `FrameworkPicker` and
+`ThemePicker` and already have dedicated preference keys, `<html>` attributes
+and no-flash handling.
+
+Each switcher gets an `<html data-<id>>` attribute and a matching panel
+contract:
+
+```html
+<html data-gradle="kts">
+  <!-- shown for any option: --> <div data-gradle-panel="all">…</div>
+  <!-- shown for one option: --> <div data-gradle-panel="kts">…</div>
+  <div data-gradle-panel="groovy">…</div>
+</html>
+```
+
+`visibilityCss(config)` hides every `[data-<id>-panel]` (plus
+`[data-framework-panel]`) and reveals the panels matching the active
+`data-<id>`. `Navbar` renders one `Switcher.astro` per configured switcher,
+with `data-kdc-toggle="<id>"` so a control is hidden on pages that have no
+matching panel.
+
+Generic switcher controls use `data-pref="sw:<id>"` (the built-in `lang` /
+`framework` controls keep `data-pref="lang"` / `data-pref="framework"`).
+`initChrome` routes `sw:<id>` changes into `applyPrefs`, which persists them to
+`kdc:<id>` and reflects them onto `data-<id>`. `syncControls` supports radio
+groups (`checked`) and `<select>` (`value`) and fills label slots
+`[data-switcher-current="<id>"]`, next to the built-in `[data-*-current]` slots:
+
+```html
+<input type="radio" name="kdc-gradle" data-pref="sw:gradle" value="kts" />
+<span data-switcher-current="gradle"></span>
+```
+
+Both the generic switchers and the framework dropdown persist through the same
+chrome preference state (`[data-pref]` + `localStorage` + `<html>` attributes),
+so a single `initChrome` call keeps every control in sync. The framework
+dropdown stays a distinct concept: its options are dev-chosen and it is not
+merged into the generic switcher.
+
 ## Preferences, no-flash and accessibility
 
 `initChrome` (wired automatically by the layouts) stores the site theme, code
-theme, language and framework in `localStorage` (`kdc:theme`,
-`kdc:code-theme`, `kdc:lang`, `kdc:framework`) and reflects them onto `<html>`
-as `data-theme`, `data-code-theme`, `data-lang` and `data-framework`.
-`noFlashScript` is inlined in `<head>` so returning visitors never see a flash
-of the default theme.
+theme, language, framework and every generic switcher in `localStorage`
+(`kdc:theme`, `kdc:code-theme`, `kdc:lang`, `kdc:framework`, `kdc:<id>`) and
+reflects them onto `<html>` as `data-theme`, `data-code-theme`, `data-lang`,
+`data-framework` and `data-<id>`. `buildNoFlashScript(keys?, switchers?)` is
+inlined in `<head>` so returning visitors never see a flash of the default
+theme or an extra switcher's default.
 
 Accessibility notes:
 
@@ -348,9 +430,10 @@ Accessibility notes:
 
 ### Panel visibility
 
-Use `data-lang-panel="<id>"` and `data-framework-panel="<id>"` (or `"all"`) on
-content blocks. `visibilityCss(config)` — injected by `BaseHead` — shows the
-block matching the active `data-lang` / `data-framework`.
+Use `data-lang-panel="<id>"`, `data-<id>-panel="<id>"` (for a generic switcher)
+and `data-framework-panel="<id>"` — or `"all"` — on content blocks.
+`visibilityCss(config)` — injected by `BaseHead` — shows the block matching the
+active `data-lang` / `data-<id>` / `data-framework`.
 
 ## Built-by requirement
 

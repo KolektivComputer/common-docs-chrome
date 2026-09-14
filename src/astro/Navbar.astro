@@ -1,10 +1,16 @@
 ---
 import Mark from './Mark.astro';
 import LangToggle from './LangToggle.astro';
+import Switcher from './Switcher.astro';
 import FrameworkPicker from './FrameworkPicker.astro';
 import ScmMenu from './ScmMenu.astro';
 import ThemePicker from './ThemePicker.astro';
-import { pageLabelFor, path, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+import {
+  pageLabelFor,
+  path,
+  resolveSwitchers,
+  type DocsChromeConfig,
+} from '@kolektiv/common-docs-chrome';
 
 interface Props {
   config: DocsChromeConfig;
@@ -22,6 +28,9 @@ const label = Astro.props.pageLabel ?? pageLabelFor(config, currentPath);
 const brandClass = hideBrandOnDesktop
   ? 'flex items-center gap-3 min-h-11 lg:hidden'
   : 'flex items-center gap-3 min-h-11';
+const switchers = resolveSwitchers(config).filter(
+  (switcher) => switcher.id !== 'lang' && switcher.id !== 'framework',
+);
 ---
 
 <div
@@ -51,6 +60,13 @@ const brandClass = hideBrandOnDesktop
     <div class="hidden sm:block">
       <LangToggle config={config} />
     </div>
+    {
+      switchers.map((switcher) => (
+        <div class="hidden sm:block">
+          <Switcher config={config} switcher={switcher} />
+        </div>
+      ))
+    }
     <FrameworkPicker config={config} />
     <ScmMenu config={config} />
     <ThemePicker config={config} />
