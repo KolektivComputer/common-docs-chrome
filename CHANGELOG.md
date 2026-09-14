@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1-SNAPSHOT.6] - 2026-09-14
+
 ### Added
 
 - Curated code themes. Core exports `CodeThemeOption`, `CODE_THEME_OPTIONS`
