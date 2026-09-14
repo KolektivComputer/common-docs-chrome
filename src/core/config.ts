@@ -86,6 +86,11 @@ export interface RepoConfig {
   branch?: string;
   /** Base URL for "edit this page" links; used to derive the edit link. */
   editBaseUrl?: string;
+  /**
+   * Source-control links. When supplied these become `scm` (deduplicated by
+   * `href`); otherwise `scm` falls back to a single `Source` link for `url`.
+   */
+  remotes?: FooterLink[];
 }
 
 export interface BuiltByConfig {
@@ -191,20 +196,35 @@ export function resolveNavbar(
   return { ...flags, links: links ?? [] };
 }
 
+/** Drop duplicate links, keeping the first occurrence of each `href`. */
+function dedupeLinks(links: FooterLink[]): FooterLink[] {
+  const seen = new Set<string>();
+  const out: FooterLink[] = [];
+  for (const link of links) {
+    if (seen.has(link.href)) continue;
+    seen.add(link.href);
+    out.push(link);
+  }
+  return out;
+}
+
+/**
+ * Source-control links derived from `repo`: its `remotes` when supplied,
+ * otherwise a single `Source` link for `repo.url`.
+ */
+export function deriveScm(repo: RepoConfig | undefined): FooterLink[] {
+  if (!repo) return [];
+  const links = repo.remotes ?? [{ label: 'Source', href: repo.url }];
+  return dedupeLinks(links);
+}
+
 /**
  * Fill in defaults for a site config. Returns a new object; the input is not
  * mutated.
  */
 export function defineDocsChrome(config: DocsChromeConfig): DocsChromeConfig {
   const repo = config.repo;
-  const scm =
-    config.scm ??
-    (repo
-      ? [
-          { label: 'Source', href: repo.url },
-          { label: 'yuri.capital', href: repo.url },
-        ]
-      : []);
+  const scm = config.scm ?? deriveScm(repo);
   return {
     ...config,
     title: config.title ?? config.name,

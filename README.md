@@ -196,6 +196,7 @@ Config:
 - `resolveNavbar(config, override?)` — navbar flags + links, layered over
   `DEFAULT_NAVBAR`
 - `resolveSwitchers(config)` — implicit `lang` plus every generic switcher
+- `deriveScm(repo)` — `remotes` (deduped) or a single `Source` link for `url`
 - `visibilityCss(config)` — `[data-lang-panel]` / `[data-<id>-panel]` /
   `[data-framework-panel]` rules
 - `RESERVED_SWITCHER_IDS`, `DEFAULT_CODE_THEME`, `DEFAULT_THEME_FAMILY`,
@@ -203,11 +204,14 @@ Config:
 
 Themes:
 
-- Types `ChromeTheme`, `ThemeFamily`, `ThemeScheme`, `ChromeThemeGroup`
+- Types `ChromeTheme`, `ThemeFamily`, `ThemeScheme`, `ChromeThemeGroup`,
+  `CodeThemeOption`
 - `allChromeThemes()` — every built-in palette + daisyUI light/dark
 - `themesByFamily(themes?)` — `Record<family, ChromeTheme[]>`
 - `groupChromeThemes(themes?, order?)` — ordered `{ family, label, themes }[]`
 - `siteThemes(config)` — built-ins filtered by `themeFamilies` + `config.themes`
+- `CODE_THEME_OPTIONS` — curated code themes (`follow` + Kolektiv palettes)
+- `codeThemeOptions(config?)` — curated code themes available for a site
 - `resolveTheme(id, themes?)` — resolve an id or alias
 - `shikiThemeForChrome(id, themes?)` — Shiki registration for a theme
 - `themeCssFor(themes)` — daisyUI CSS for the supplied themes
@@ -246,11 +250,11 @@ Every component lives at `@kolektiv/common-docs-chrome/astro/<Name>.astro`:
 | `Navbar.astro` | Sticky navbar with the current page label and controls |
 | `Sidebar.astro` | Categorised nav, optional per-item icons, active highlight |
 | `Footer.astro` | Footer with links and the built-by mark |
-| `ThemePicker.astro` | Site + code theme popover grouped by family |
+| `ThemePicker.astro` | Site themes grouped by family + curated code themes |
 | `LangToggle.astro` | Language switch (renders only when `langs` is set) |
 | `Switcher.astro` | Generic segmented switcher (renders a `SwitcherConfig`) |
 | `FrameworkPicker.astro` | Framework switch (renders only when `frameworks` is set) |
-| `ScmMenu.astro` | Source-control menu (renders when `scm`/`repo` is set) |
+| `ScmMenu.astro` | Source-control link (one) or popover menu (many) |
 | `Mark.astro` | Logo/mark image, with the `@kolektiv/brand-core` icon mark as fallback |
 | `BuiltByMark.astro` | Always-on "Built by Kolektiv Computing" mark |
 | `SearchDialog.astro` | Client-side search over the configured nav |
@@ -269,7 +273,7 @@ component names to import paths).
 | `base` | `string` | `/` | Astro base path. |
 | `logo` | `string` | — | Logo/wordmark URL for the navbar. |
 | `mark` | `string` | — | Icon URL; falls back to the `@kolektiv/brand-core` icon mark. |
-| `repo` | `RepoConfig` | — | `{ url, branch?, editBaseUrl? }`. |
+| `repo` | `RepoConfig` | — | `{ url, branch?, editBaseUrl?, remotes? }`. |
 | `nav` | `NavSection[]` | `[]` | Sidebar/nav model. |
 | `defaultTheme` | `string` | — | Required. Applied on first visit + SSR. |
 | `defaultCodeTheme` | `string` | `follow` | A theme id or `follow`. |
@@ -282,7 +286,7 @@ component names to import paths).
 | `defaultFramework` | `string` | first `frameworks` | SSR default. |
 | `switchers` | `SwitcherConfig[]` | `[]` | Extra generic switchers (see below). |
 | `navbar` | `NavbarConfig` | all shown | Toggle built-in controls and add navbar links (see below). |
-| `scm` | `FooterLink[]` | derived from `repo` | Source-control menu links. |
+| `scm` | `FooterLink[]` | `repo.remotes`, else one `Source` link for `repo.url` | Source-control links; deduplicated by `href`. |
 | `footer.links` | `FooterLink[]` | `[]` | Footer link column. |
 | `footer.copyright` | `string` | `© {year} Kolektiv Computing` | `{year}` is replaced. |
 | `footer.tagline` | `string` | — | Blurb next to the built-by mark. |
@@ -346,7 +350,34 @@ selected by `data-code-theme`:
 - `follow` (default) tracks the site theme.
 - Any theme id pins code blocks to that theme.
 
-`ThemePicker` offers `Follow site theme` plus every registered theme.
+`ThemePicker` groups the site themes by family (one `menu-title` heading per
+family, ordered by `themeFamilies`) and offers a **curated** code-theme list —
+`Follow site theme`, the Catppuccin flavours (shown by flavour, e.g. `Mocha`),
+Nord, and the Kolektiv palettes. The curated list is restricted to the themes
+that exist for the site, then any `config.themes` are appended, so custom site
+themes appear in both lists. `codeThemeOptions(config)` returns that list and
+`CODE_THEME_OPTIONS` is the curated constant.
+
+## Source-control links
+
+`ScmMenu` renders the deduplicated `scm` list. With **one** link it is a single
+icon link (`title` / `aria-label` = the link label; external links get
+`target`/`rel`); with **several** it opens the popover menu; with **none** it
+renders nothing.
+
+By default `scm` is derived from `repo`: `repo.remotes` when supplied
+(deduplicated by `href`, order preserved), otherwise a single
+`{ label: 'Source', href: repo.url }`. An explicit `config.scm` always wins.
+
+```ts
+repo: {
+  url: 'https://github.com/KolektivComputer/keel',
+  remotes: [
+    { label: 'GitHub', href: 'https://github.com/KolektivComputer/keel' },
+    { label: 'yuri.capital', href: 'https://yuri.capital/keel' },
+  ],
+},
+```
 
 ## Generic switchers
 

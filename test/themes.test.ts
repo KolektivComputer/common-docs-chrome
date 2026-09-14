@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { defineDocsChrome } from '../src/core/config.js';
 import {
+  CODE_THEME_OPTIONS,
   allChromeThemes,
+  codeThemeOptions,
   groupChromeThemes,
   isBuiltinPalette,
   resolveTheme,
@@ -142,6 +144,51 @@ describe('shikiThemeForChrome', () => {
     expect(shikiThemeForChrome('nord')).toBe('nord');
     expect(shikiThemeForChrome('light')).toBe('github-light');
     expect(shikiThemeForChrome('dark')).toBe('github-dark');
+  });
+});
+
+describe('CODE_THEME_OPTIONS', () => {
+  it('starts with follow and lists only the curated Kolektiv palettes', () => {
+    expect(CODE_THEME_OPTIONS[0]?.id).toBe('follow');
+    expect(CODE_THEME_OPTIONS.map((option) => option.id)).toEqual([
+      'follow',
+      'catppuccin-latte',
+      'catppuccin-frappe',
+      'catppuccin-macchiato',
+      'catppuccin-mocha',
+      'nord',
+      'kolektiv-light',
+      'kolektiv-dark',
+    ]);
+  });
+
+  it('never offers the daisyUI built-ins', () => {
+    const ids = CODE_THEME_OPTIONS.map((option) => option.id);
+    expect(ids).not.toContain('light');
+    expect(ids).not.toContain('dark');
+  });
+});
+
+describe('codeThemeOptions', () => {
+  it('keeps follow first and applies the family restriction', () => {
+    const ids = codeThemeOptions(SITE_CONFIG).map((option) => option.id);
+    expect(ids[0]).toBe('follow');
+    expect(ids).toContain('catppuccin-mocha');
+    expect(ids).toContain('kolektiv-dark');
+    expect(ids).not.toContain('nord');
+    expect(ids).not.toContain('light');
+  });
+
+  it('appends custom site themes without duplicates, after the curated list', () => {
+    const ids = codeThemeOptions(SITE_CONFIG).map((option) => option.id);
+    expect(ids).toContain('kalendee-dark');
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.indexOf('kalendee-dark')).toBeGreaterThan(ids.indexOf('kolektiv-dark'));
+  });
+
+  it('offers nothing but follow when only daisyUI is allowed', () => {
+    const ids = codeThemeOptions({ themeFamilies: ['daisyui'] }).map((option) => option.id);
+    expect(ids).toEqual(['follow']);
   });
 });
 
