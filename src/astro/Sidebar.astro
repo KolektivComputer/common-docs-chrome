@@ -50,7 +50,11 @@ function isActive(href: string): boolean {
                   aria-current={isActive(item.href) ? 'page' : undefined}
                   class:list={[
                     'min-h-0 justify-start py-1.5 text-start',
-                    isActive(item.href) && 'menu-active bg-base-100 font-medium',
+                    // daisyUI `menu-active` sets the foreground to
+                    // `neutral-content`, which can be unreadable on the
+                    // `base-100` pill we pair it with (e.g. kolektiv-dark).
+                    // `text-base-content` supplies the matching foreground.
+                    isActive(item.href) && 'menu-active bg-base-100 text-base-content font-medium',
                   ]}
                 >
                   {item.icon && (
