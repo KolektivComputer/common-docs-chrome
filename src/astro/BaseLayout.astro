@@ -6,6 +6,7 @@ import {
   resolveSwitchers,
   toggleRelevanceScript,
   type DocsChromeConfig,
+  type NavbarConfig,
 } from '@kolektiv/common-docs-chrome';
 
 interface Props {
@@ -13,9 +14,11 @@ interface Props {
   title?: string;
   description?: string;
   image?: string;
+  /** Per-page navbar override, merged over `config.navbar`. */
+  navbar?: Partial<NavbarConfig>;
 }
 
-const { config } = Astro.props;
+const { config, navbar } = Astro.props;
 const defaultLang = config.defaultLang ?? config.langs?.[0]?.id;
 const defaultFramework = config.defaultFramework ?? config.frameworks?.[0]?.id;
 const switcherAttrs = Object.fromEntries(
@@ -53,7 +56,21 @@ const switcherAttrs = Object.fromEntries(
     >
       Skip to content
     </a>
-    <Navbar config={config} />
+    <Navbar
+      config={config}
+      navbar={navbar}
+      slotFilled={{
+        brand: Astro.slots.has('brand'),
+        'navbar-start': Astro.slots.has('navbar-start'),
+        'navbar-center': Astro.slots.has('navbar-center'),
+        'navbar-end': Astro.slots.has('navbar-end'),
+      }}
+    >
+      <slot name="brand" slot="brand" />
+      <slot name="navbar-start" slot="navbar-start" />
+      <slot name="navbar-center" slot="navbar-center" />
+      <slot name="navbar-end" slot="navbar-end" />
+    </Navbar>
     <main id="main" class="flex-1 px-4 py-12 sm:px-8 lg:px-10">
       <div class="mx-auto max-w-4xl">
         <slot />

@@ -189,15 +189,17 @@ const { frontmatter } = Astro.props;
 
 Config:
 
-- `DocsChromeConfig`, `NavSection`, `NavItem`, `FooterConfig`, `FooterLink`,
-  `RepoConfig`, `BuiltByConfig`, `SwitcherConfig`, `SwitcherOption`
+- `DocsChromeConfig`, `NavSection`, `NavItem`, `NavbarConfig`, `FooterConfig`,
+  `FooterLink`, `RepoConfig`, `BuiltByConfig`, `SwitcherConfig`, `SwitcherOption`
 - `defineDocsChrome(config)` — fills defaults, returns a normalised config
 - `pageLabelFor(config, pathname)`, `findNavItem(config, pathname)`
+- `resolveNavbar(config, override?)` — navbar flags + links, layered over
+  `DEFAULT_NAVBAR`
 - `resolveSwitchers(config)` — implicit `lang` plus every generic switcher
 - `visibilityCss(config)` — `[data-lang-panel]` / `[data-<id>-panel]` /
   `[data-framework-panel]` rules
 - `RESERVED_SWITCHER_IDS`, `DEFAULT_CODE_THEME`, `DEFAULT_THEME_FAMILY`,
-  `DEFAULT_BUILT_BY`
+  `DEFAULT_BUILT_BY`, `DEFAULT_NAVBAR`
 
 Themes:
 
@@ -279,6 +281,7 @@ component names to import paths).
 | `defaultLang` | `string` | first `langs` | SSR default. |
 | `defaultFramework` | `string` | first `frameworks` | SSR default. |
 | `switchers` | `SwitcherConfig[]` | `[]` | Extra generic switchers (see below). |
+| `navbar` | `NavbarConfig` | all shown | Toggle built-in controls and add navbar links (see below). |
 | `scm` | `FooterLink[]` | derived from `repo` | Source-control menu links. |
 | `footer.links` | `FooterLink[]` | `[]` | Footer link column. |
 | `footer.copyright` | `string` | `© {year} Kolektiv Computing` | `{year}` is replaced. |
@@ -406,6 +409,61 @@ chrome preference state (`[data-pref]` + `localStorage` + `<html>` attributes),
 so a single `initChrome` call keeps every control in sync. The framework
 dropdown stays a distinct concept: its options are dev-chosen and it is not
 merged into the generic switcher.
+
+## Customising the navbar
+
+`Navbar` renders a fixed set of controls. Without forking, a site can hide any
+built-in control, add its own links, and inject content into named slots. All
+of it is optional: omitting `navbar` (and every slot) renders the stock navbar
+exactly.
+
+```ts
+navbar: {
+  showBrand: true,     // brand lockup
+  showLabel: true,     // current page label
+  showLang: true,      // language switch
+  showSwitchers: true, // extra configured switchers
+  showFramework: true, // framework dropdown
+  showScm: true,       // SCM menu
+  showTheme: true,     // theme picker
+  links: [
+    { label: 'Blog', href: '/blog' },
+    { label: 'GitHub', href: 'https://github.com/acme/site', external: true },
+  ],
+},
+```
+
+`NavbarConfig` is `{ showBrand?, …, showTheme?, links? }` and every flag
+defaults to `true`. `links` accepts `NavItem`s (`{ label, href, icon?,
+external? }`) rendered as ghost buttons after the switchers and before the
+SCM/theme controls; external links open in a new tab, non-external links go
+through `path()` so they respect `base`, and duplicate `href`s are collapsed.
+
+The layouts also accept a per-page `navbar` override — merged over
+`config.navbar` — and forward four named slots:
+
+| Slot | Position |
+| --- | --- |
+| `brand` | Replaces the brand lockup when filled. |
+| `navbar-start` | Inside `navbar-start`, after the brand. |
+| `navbar-center` | Inside `navbar-center`, replacing the page label when filled. |
+| `navbar-end` | At the very end of the end cluster. |
+
+```astro
+---
+import DocsLayout from '@kolektiv/common-docs-chrome/astro/DocsLayout.astro';
+import { docs } from '../docs-chrome';
+---
+
+<DocsLayout config={docs} title="Overview" navbar={{ showTheme: false }}>
+  <a slot="navbar-end" href="/changelog">Changelog</a>
+  <p>Page content, as usual.</p>
+</DocsLayout>
+```
+
+`resolveNavbar(config, override?)` returns the merged `{ showBrand, …,
+links }` and is what the layouts use; `DEFAULT_NAVBAR` holds the all-true
+defaults.
 
 ## Preferences, no-flash and accessibility
 

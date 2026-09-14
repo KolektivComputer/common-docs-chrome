@@ -11,6 +11,7 @@ import {
   resolveSwitchers,
   toggleRelevanceScript,
   type DocsChromeConfig,
+  type NavbarConfig,
 } from '@kolektiv/common-docs-chrome';
 
 interface Props {
@@ -19,9 +20,11 @@ interface Props {
   description?: string;
   currentPath?: string;
   pageLabel?: string;
+  /** Per-page navbar override, merged over `config.navbar`. */
+  navbar?: Partial<NavbarConfig>;
 }
 
-const { config } = Astro.props;
+const { config, navbar } = Astro.props;
 const currentPath = Astro.props.currentPath ?? Astro.url.pathname;
 const label = Astro.props.pageLabel ?? pageLabelFor(config, currentPath);
 const defaultLang = config.defaultLang ?? config.langs?.[0]?.id;
@@ -65,7 +68,25 @@ const drawerId = 'kdc-drawer';
     <div class="drawer lg:drawer-open">
       <input id={drawerId} type="checkbox" class="drawer-toggle" />
       <div class="drawer-content flex min-h-dvh flex-col">
-        <Navbar config={config} currentPath={currentPath} pageLabel={label} drawerId={drawerId} hideBrandOnDesktop />
+        <Navbar
+          config={config}
+          currentPath={currentPath}
+          pageLabel={label}
+          drawerId={drawerId}
+          hideBrandOnDesktop
+          navbar={navbar}
+          slotFilled={{
+            brand: Astro.slots.has('brand'),
+            'navbar-start': Astro.slots.has('navbar-start'),
+            'navbar-center': Astro.slots.has('navbar-center'),
+            'navbar-end': Astro.slots.has('navbar-end'),
+          }}
+        >
+          <slot name="brand" slot="brand" />
+          <slot name="navbar-start" slot="navbar-start" />
+          <slot name="navbar-center" slot="navbar-center" />
+          <slot name="navbar-end" slot="navbar-end" />
+        </Navbar>
         <main id="main" class="flex-1 px-4 py-8 sm:px-8 lg:px-10">
           <div class="kdc-prose mx-auto max-w-3xl">
             <slot />

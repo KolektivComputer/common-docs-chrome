@@ -6,11 +6,17 @@ import FrameworkPicker from './FrameworkPicker.astro';
 import ScmMenu from './ScmMenu.astro';
 import ThemePicker from './ThemePicker.astro';
 import {
+  isExternal,
   pageLabelFor,
   path,
+  resolveNavbar,
   resolveSwitchers,
   type DocsChromeConfig,
+  type NavbarConfig,
+  type NavItem,
 } from '@kolektiv/common-docs-chrome';
+
+type NavbarSlotName = 'brand' | 'navbar-start' | 'navbar-center' | 'navbar-end';
 
 interface Props {
   config: DocsChromeConfig;
@@ -20,17 +26,36 @@ interface Props {
   /** When set, the brand lockup toggles this drawer id on mobile. */
   drawerId?: string;
   hideBrandOnDesktop?: boolean;
+  /** Per-page navbar override, merged over `config.navbar`. */
+  navbar?: Partial<NavbarConfig>;
+  /**
+   * Which named slots carry content. Wrapping layouts set this from their own
+   * `Astro.slots.has`, because a forwarded `<slot>` registers statically and
+   * would otherwise look filled. Omit it when using `Navbar` directly.
+   */
+  slotFilled?: Partial<Record<NavbarSlotName, boolean>>;
 }
 
 const { config, drawerId, hideBrandOnDesktop = false } = Astro.props;
 const currentPath = Astro.props.currentPath ?? Astro.url.pathname;
 const label = Astro.props.pageLabel ?? pageLabelFor(config, currentPath);
+const resolved = resolveNavbar(config, Astro.props.navbar);
 const brandClass = hideBrandOnDesktop
   ? 'flex items-center gap-3 min-h-11 lg:hidden'
   : 'flex items-center gap-3 min-h-11';
 const switchers = resolveSwitchers(config).filter(
   (switcher) => switcher.id !== 'lang' && switcher.id !== 'framework',
 );
+const links: NavItem[] = [];
+for (const link of resolved.links) {
+  if (!link || !link.href) continue;
+  if (!links.some((existing) => existing.href === link.href)) links.push(link);
+}
+const filled = Astro.props.slotFilled;
+const hasBrand = filled?.brand ?? Astro.slots.has('brand');
+const hasStart = filled?.['navbar-start'] ?? Astro.slots.has('navbar-start');
+const hasCenter = filled?.['navbar-center'] ?? Astro.slots.has('navbar-center');
+const hasEnd = filled?.['navbar-end'] ?? Astro.slots.has('navbar-end');
 ---
 
 <div
@@ -38,37 +63,84 @@ const switchers = resolveSwitchers(config).filter(
 >
   <div class="navbar-start gap-2 sm:gap-3">
     {
-      drawerId ? (
-        <label for={drawerId} class={brandClass} aria-label="Open docs menu">
-          <Mark config={config} />
-          <span class="font-display text-xl tracking-tight">{config.name}</span>
-        </label>
+      hasBrand ? (
+        <slot name="brand" />
       ) : (
-        <a href={path('/', config.base)} class={brandClass}>
-          <Mark config={config} />
-          <span class="font-display text-xl tracking-tight">{config.name}</span>
-        </a>
+        resolved.showBrand &&
+        (drawerId ? (
+          <label for={drawerId} class={brandClass} aria-label="Open docs menu">
+            <Mark config={config} />
+            <span class="font-display text-xl tracking-tight">{config.name}</span>
+          </label>
+        ) : (
+          <a href={path('/', config.base)} class={brandClass}>
+            <Mark config={config} />
+            <span class="font-display text-xl tracking-tight">{config.name}</span>
+          </a>
+        ))
       )
     }
+    {hasStart && <slot name="navbar-start" />}
   </div>
 
-  <div class="navbar-center hidden min-w-0 sm:flex">
-    <span class="truncate font-display text-lg" aria-current="page">{label}</span>
-  </div>
+  {
+    (hasCenter || resolved.showLabel) && (
+      <div class="navbar-center hidden min-w-0 sm:flex">
+        {hasCenter ? (
+          <slot name="navbar-center" />
+        ) : (
+          <span class="truncate font-display text-lg" aria-current="page">
+            {label}
+          </span>
+        )}
+      </div>
+    )
+  }
 
   <div class="navbar-end gap-1">
-    <div class="hidden sm:block">
-      <LangToggle config={config} />
-    </div>
     {
-      switchers.map((switcher) => (
+      resolved.showLang && (
         <div class="hidden sm:block">
-          <Switcher config={config} switcher={switcher} />
+          <LangToggle config={config} />
         </div>
+      )
+    }
+    {
+      resolved.showSwitchers &&
+        switchers.map((switcher) => (
+          <div class="hidden sm:block">
+            <Switcher config={config} switcher={switcher} />
+          </div>
+        ))
+    }
+    {resolved.showFramework && <FrameworkPicker config={config} />}
+    {
+      links.map((link) => (
+        <a
+          href={isExternal(link.href) ? link.href : path(link.href, config.base)}
+          target={isExternal(link.href) ? '_blank' : undefined}
+          rel={isExternal(link.href) ? 'noreferrer' : undefined}
+          class="btn btn-ghost btn-sm min-h-11 gap-2 px-3"
+          data-navbar-link
+        >
+          {link.icon && (
+            <svg
+              viewBox="0 0 24 24"
+              class="size-4 shrink-0 fill-none stroke-current"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d={link.icon} />
+            </svg>
+          )}
+          <span>{link.label}</span>
+        </a>
       ))
     }
-    <FrameworkPicker config={config} />
-    <ScmMenu config={config} />
-    <ThemePicker config={config} />
+    {resolved.showScm && <ScmMenu config={config} />}
+    {resolved.showTheme && <ThemePicker config={config} />}
+    {hasEnd && <slot name="navbar-end" />}
   </div>
 </div>
