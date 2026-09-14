@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1-SNAPSHOT.2] - 2026-09-14
+
+### Changed
+
+- Widened the theme picker popover to `w-96` and capped it with
+  `max-w-[calc(100vw-2rem)]` so it stays on-screen on small viewports.
+
+### Added
+
+- Language and framework toggles now declare their relevance via
+  `data-kdc-toggle="lang"` / `data-kdc-toggle="framework"`. The new
+  `initToggleRelevance` core helper (and its dependency-free
+  `toggleRelevanceScript` inline form) hides a toggle on any page that has no
+  matching `[data-lang-panel]` / `[data-framework-panel]` block. Both layouts
+  run the inline script before first paint, so relevant pages never flash the
+  controls.
+
 ## [0.0.1-SNAPSHOT.1] - 2026-09-14
 
 ### Added

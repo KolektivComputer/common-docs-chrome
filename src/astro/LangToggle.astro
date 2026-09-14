@@ -14,7 +14,7 @@ const btn = size === 'sm' ? 'btn btn-sm min-h-10' : 'btn btn-xs min-h-8';
 
 {
   langs.length > 0 && (
-    <div class="join" role="group" aria-label="Language">
+    <div class="join" role="group" aria-label="Language" data-kdc-toggle="lang">
       {langs.map((lang) => (
         <label class:list={[btn, 'join-item kdc-toggle px-3']}>
           <input

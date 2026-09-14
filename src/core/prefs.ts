@@ -198,6 +198,40 @@ export function initChrome(options: PrefOptions): ChromePrefs {
   return prefs;
 }
 
+/** Attribute that marks a control as relevant only when a matching panel exists. */
+export const TOGGLE_RELEVANCE_ATTR = 'data-kdc-toggle';
+
+/**
+ * Hide language / framework controls on pages that contain no matching
+ * `[data-lang-panel]` / `[data-framework-panel]` block. Relevance mirrors the
+ * visibility rules in `visibilityCss`: a `lang` toggle is only shown when the
+ * document has a language panel, and likewise for `framework`. Idempotent and
+ * safe to call without a DOM.
+ */
+export function initToggleRelevance(
+  root: ParentNode | undefined = typeof document !== 'undefined' ? document : undefined,
+): void {
+  if (!root) return;
+  root.querySelectorAll<HTMLElement>(`[${TOGGLE_RELEVANCE_ATTR}]`).forEach((el) => {
+    const kind = el.getAttribute(TOGGLE_RELEVANCE_ATTR);
+    if (kind !== 'lang' && kind !== 'framework') return;
+    const relevant = root.querySelector(`[data-${kind}-panel]`) !== null;
+    el.style.display = relevant ? '' : 'none';
+  });
+}
+
+/**
+ * Inline snippet form of {@link initToggleRelevance}, placed at the end of the
+ * body so relevance is resolved before first paint (no flash of a toggle that
+ * is about to be hidden). Kept dependency-free so it can be inlined verbatim.
+ */
+export const toggleRelevanceScript =
+  '(function(){try{var d=document,e=d.querySelectorAll("[data-kdc-toggle]");' +
+  'for(var i=0;i<e.length;i++){var t=e[i],k=t.getAttribute("data-kdc-toggle");' +
+  'if(k!=="lang"&&k!=="framework")continue;' +
+  't.style.display=d.querySelector("[data-"+k+"-panel]")?"":"none";}' +
+  '}catch(e){}})();';
+
 /**
  * Inline `<head>` snippet that applies stored preferences before first paint so
  * returning visitors never see a flash of the default theme.

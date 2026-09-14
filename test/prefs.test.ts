@@ -3,9 +3,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   applyPrefs,
   initChrome,
+  initToggleRelevance,
   noFlashScript,
   readPrefs,
   syncControls,
+  toggleRelevanceScript,
+  TOGGLE_RELEVANCE_ATTR,
   type PrefOptions,
 } from '../src/core/prefs.js';
 
@@ -110,6 +113,75 @@ describe('initChrome', () => {
 
     expect(document.documentElement.getAttribute('data-theme')).toBe('light');
     expect(localStorage.getItem('kdc:theme')).toBe('light');
+  });
+});
+
+describe('initToggleRelevance', () => {
+  function mount(panel: 'lang' | 'framework' | 'both' | 'none'): void {
+    document.body.innerHTML = `
+      <div class="nav">
+        <div data-kdc-toggle="lang"><input type="radio" data-pref="lang" value="ts" /></div>
+        <button data-kdc-toggle="framework"></button>
+      </div>
+      ${panel === 'lang' || panel === 'both' ? '<div data-lang-panel="all"></div>' : ''}
+      ${panel === 'framework' || panel === 'both' ? '<div data-framework-panel="all"></div>' : ''}
+    `;
+  }
+
+  function toggle(kind: 'lang' | 'framework'): HTMLElement {
+    return document.querySelector<HTMLElement>(`[${TOGGLE_RELEVANCE_ATTR}="${kind}"]`)!;
+  }
+
+  it('hides both toggles when no panels are present', () => {
+    mount('none');
+    initToggleRelevance();
+    expect(toggle('lang').style.display).toBe('none');
+    expect(toggle('framework').style.display).toBe('none');
+  });
+
+  it('shows the lang toggle only when a language panel exists', () => {
+    mount('lang');
+    initToggleRelevance();
+    expect(toggle('lang').style.display).toBe('');
+    expect(toggle('framework').style.display).toBe('none');
+  });
+
+  it('shows the framework toggle only when a framework panel exists', () => {
+    mount('framework');
+    initToggleRelevance();
+    expect(toggle('lang').style.display).toBe('none');
+    expect(toggle('framework').style.display).toBe('');
+  });
+
+  it('is idempotent across repeated runs', () => {
+    mount('both');
+    initToggleRelevance();
+    initToggleRelevance();
+    expect(toggle('lang').style.display).toBe('');
+    expect(toggle('framework').style.display).toBe('');
+  });
+
+  it('ignores unscoped toggle attributes', () => {
+    document.body.innerHTML = '<div data-kdc-toggle="other"></div>';
+    initToggleRelevance();
+    expect(document.querySelector<HTMLElement>('[data-kdc-toggle="other"]')!.style.display).toBe('');
+  });
+});
+
+describe('toggleRelevanceScript', () => {
+  it('matches initToggleRelevance when executed in the page', () => {
+    document.body.innerHTML = `
+      <div data-kdc-toggle="lang"></div>
+      <div data-kdc-toggle="framework"></div>
+      <div data-lang-panel="all"></div>
+    `;
+    new Function(toggleRelevanceScript)();
+    expect(
+      document.querySelector<HTMLElement>('[data-kdc-toggle="lang"]')!.style.display,
+    ).toBe('');
+    expect(
+      document.querySelector<HTMLElement>('[data-kdc-toggle="framework"]')!.style.display,
+    ).toBe('none');
   });
 });
 

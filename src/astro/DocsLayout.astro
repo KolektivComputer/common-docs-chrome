@@ -5,7 +5,12 @@ import Footer from './Footer.astro';
 import Sidebar from './Sidebar.astro';
 import SearchDialog from './SearchDialog.astro';
 import Mark from './Mark.astro';
-import { pageLabelFor, path, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+import {
+  pageLabelFor,
+  path,
+  toggleRelevanceScript,
+  type DocsChromeConfig,
+} from '@kolektiv/common-docs-chrome';
 
 interface Props {
   config: DocsChromeConfig;
@@ -89,5 +94,6 @@ const drawerId = 'kdc-drawer';
         </aside>
       </div>
     </div>
+    <script is:inline set:html={toggleRelevanceScript} />
   </body>
 </html>

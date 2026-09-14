@@ -2,7 +2,7 @@
 import BaseHead from './BaseHead.astro';
 import Navbar from './Navbar.astro';
 import Footer from './Footer.astro';
-import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+import { toggleRelevanceScript, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
 
 interface Props {
   config: DocsChromeConfig;
@@ -47,5 +47,6 @@ const defaultFramework = config.defaultFramework ?? config.frameworks?.[0]?.id;
       </div>
     </main>
     <Footer config={config} />
+    <script is:inline set:html={toggleRelevanceScript} />
   </body>
 </html>
