@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1-SNAPSHOT.9] - 2026-09-14
+
+### Fixed
+
+- footer built-by mark keeps the initial K — the generated variant content is
+  used instead of the legacy partial map.
+
 ## [0.0.1-SNAPSHOT.8] - 2026-09-14
 
 ### Fixed
