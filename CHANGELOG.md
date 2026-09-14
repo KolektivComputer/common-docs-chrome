@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1-SNAPSHOT.8] - 2026-09-14
+
+### Fixed
+
+- active sidebar link uses base-content so it is readable in every theme,
+  e.g. kolektiv-dark.
+
 ## [0.0.1-SNAPSHOT.7] - 2026-09-14
 
 ### Changed
