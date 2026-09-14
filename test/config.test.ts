@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  DEFAULT_NAVBAR,
   defineDocsChrome,
   findNavItem,
   pageLabelFor,
+  resolveNavbar,
   resolveSwitchers,
   visibilityCss,
 } from '../src/core/config.js';
@@ -154,6 +156,81 @@ describe('resolveSwitchers', () => {
       switchers: [{ id: 'gradle', options: [] }],
     });
     expect(resolveSwitchers(empty)).toEqual([]);
+  });
+});
+
+describe('resolveNavbar', () => {
+  it('defaults every flag to true with no links', () => {
+    expect(DEFAULT_NAVBAR).toEqual({
+      showBrand: true,
+      showLabel: true,
+      showLang: true,
+      showSwitchers: true,
+      showFramework: true,
+      showScm: true,
+      showTheme: true,
+    });
+    expect(resolveNavbar(config)).toEqual({ ...DEFAULT_NAVBAR, links: [] });
+  });
+
+  it('merges the site config over the defaults', () => {
+    const withNavbar = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      navbar: { showTheme: false, showScm: false },
+    });
+    expect(resolveNavbar(withNavbar)).toMatchObject({
+      showBrand: true,
+      showTheme: false,
+      showScm: false,
+    });
+  });
+
+  it('lets a per-page override beat the site config', () => {
+    const withNavbar = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      navbar: { showTheme: false, showLang: false },
+    });
+    expect(
+      resolveNavbar(withNavbar, { showTheme: true, showLabel: false }),
+    ).toMatchObject({ showTheme: true, showLang: false, showLabel: false });
+  });
+
+  it('keeps the last supplied links array', () => {
+    const siteLinks = [{ label: 'Site', href: '/site' }];
+    const pageLinks = [{ label: 'Page', href: '/page' }];
+    const withNavbar = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      navbar: { links: siteLinks },
+    });
+    expect(resolveNavbar(withNavbar).links).toEqual(siteLinks);
+    expect(resolveNavbar(withNavbar, { links: pageLinks }).links).toEqual(pageLinks);
+  });
+
+  it('honours explicit false and ignores undefined flags', () => {
+    const withNavbar = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      navbar: { showBrand: false, showLabel: undefined },
+    });
+    const resolved = resolveNavbar(withNavbar, { showScm: undefined });
+    expect(resolved.showBrand).toBe(false);
+    expect(resolved.showLabel).toBe(true);
+    expect(resolved.showScm).toBe(true);
   });
 });
 

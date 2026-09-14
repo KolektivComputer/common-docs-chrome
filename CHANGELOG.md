@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Customizable navbar. `DocsChromeConfig.navbar` (`NavbarConfig`) toggles each
+  built-in control (`showBrand`, `showLabel`, `showLang`, `showSwitchers`,
+  `showFramework`, `showScm`, `showTheme`) and adds `links`; `resolveNavbar`
+  layers `DEFAULT_NAVBAR`, the site config and a per-page override, and the
+  Astro layouts accept a `navbar` prop. `BaseLayout`/`DocsLayout` forward
+  `brand`, `navbar-start`, `navbar-center` and `navbar-end` slots. Defaults
+  render the stock navbar unchanged.
+
 ## [0.0.1-SNAPSHOT.4] - 2026-09-14
 
 ### Added

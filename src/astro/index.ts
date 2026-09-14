@@ -1,6 +1,6 @@
-import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+import type { DocsChromeConfig, NavbarConfig } from '@kolektiv/common-docs-chrome';
 
-export type { DocsChromeConfig };
+export type { DocsChromeConfig, NavbarConfig };
 
 /**
  * Import paths for every shipped Astro component. Consumers normally import the

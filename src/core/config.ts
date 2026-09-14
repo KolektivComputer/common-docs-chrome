@@ -26,6 +26,29 @@ export interface FooterLink {
   href: string;
 }
 
+/**
+ * Per-site (or per-page) navbar customisation. Every flag defaults to `true`,
+ * so omitting `navbar` preserves the stock navbar exactly.
+ */
+export interface NavbarConfig {
+  /** Show the brand lockup. Default true. */
+  showBrand?: boolean;
+  /** Show the current page label. Default true. */
+  showLabel?: boolean;
+  /** Show the language switch. Default true. */
+  showLang?: boolean;
+  /** Show extra configured switchers. Default true. */
+  showSwitchers?: boolean;
+  /** Show the framework dropdown. Default true. */
+  showFramework?: boolean;
+  /** Show the SCM menu. Default true. */
+  showScm?: boolean;
+  /** Show the theme picker. Default true. */
+  showTheme?: boolean;
+  /** Extra navbar links, rendered after the switchers and before SCM/theme. */
+  links?: NavItem[];
+}
+
 export interface FooterConfig {
   /** Extra links rendered in the footer. */
   links?: FooterLink[];
@@ -117,6 +140,11 @@ export interface DocsChromeConfig {
   switchers?: SwitcherConfig[];
   /** Source-control links for the SCM menu. Derived from `repo` when omitted. */
   scm?: FooterLink[];
+  /**
+   * Navbar customisation: toggle the built-in controls and add extra links.
+   * Individual layouts accept a per-page `navbar` override.
+   */
+  navbar?: NavbarConfig;
   footer?: FooterConfig;
   builtBy?: BuiltByConfig;
 }
@@ -127,6 +155,41 @@ export const DEFAULT_BUILT_BY: Required<Pick<BuiltByConfig, 'href' | 'label'>> =
   href: 'https://kolektiv.computer',
   label: 'Built by Kolektiv Computing',
 };
+
+/** Every navbar visibility flag defaults to on; `links` defaults to `[]`. */
+export const DEFAULT_NAVBAR: Required<Omit<NavbarConfig, 'links'>> = {
+  showBrand: true,
+  showLabel: true,
+  showLang: true,
+  showSwitchers: true,
+  showFramework: true,
+  showScm: true,
+  showTheme: true,
+};
+
+const NAVBAR_FLAG_KEYS = Object.keys(DEFAULT_NAVBAR) as (keyof typeof DEFAULT_NAVBAR)[];
+
+/**
+ * Resolve the effective navbar options by layering `DEFAULT_NAVBAR`, the site
+ * config and an optional per-page override. Undefined flags are ignored so a
+ * layer never blanks a default; the last supplied `links` array wins.
+ */
+export function resolveNavbar(
+  config: DocsChromeConfig,
+  override?: Partial<NavbarConfig>,
+): Required<NavbarConfig> {
+  const flags = { ...DEFAULT_NAVBAR };
+  let links: NavItem[] | undefined;
+  for (const layer of [config.navbar, override]) {
+    if (!layer) continue;
+    for (const key of NAVBAR_FLAG_KEYS) {
+      const value = layer[key];
+      if (typeof value === 'boolean') flags[key] = value;
+    }
+    if (Array.isArray(layer.links)) links = layer.links;
+  }
+  return { ...flags, links: links ?? [] };
+}
 
 /**
  * Fill in defaults for a site config. Returns a new object; the input is not
