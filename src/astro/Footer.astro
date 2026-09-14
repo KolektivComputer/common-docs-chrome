@@ -26,7 +26,8 @@ const links = config.footer?.links ?? [];
         <span class="font-display text-xl tracking-tight">{config.name}</span>
       </div>
       {config.footer?.tagline && <p class="mt-3">{config.footer.tagline}</p>}
-      <BuiltByMark config={config} class="mt-4" />
+      <BuiltByMark config={config} class="mt-5" />
+      <p class="mt-3 text-xs">{copyright}</p>
     </aside>
 
     {
@@ -46,9 +47,5 @@ const links = config.footer?.links ?? [];
         </nav>
       )
     }
-
-    <div class="w-full border-t border-base-300 pt-4 text-xs sm:w-auto sm:border-0 sm:pt-0">
-      <p>{copyright}</p>
-    </div>
   </div>
 </footer>

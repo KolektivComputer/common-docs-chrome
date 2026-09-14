@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bigger footer built-by mark. `BuiltByMark` defaults the artwork to
+  `h-10 w-auto` (40 px, matching the brand docs footer) via the new
+  `markClass` prop, and `Footer` moves the copyright into the identity
+  column directly below the mark: identity → mark → copyright.
+
 ## [0.0.1-SNAPSHOT.6] - 2026-09-14
 
 ### Added

@@ -249,14 +249,14 @@ Every component lives at `@kolektiv/common-docs-chrome/astro/<Name>.astro`:
 | `DocsLayout.astro` | Primary docs shell (sidebar lockup, navbar, footer) |
 | `Navbar.astro` | Sticky navbar with the current page label and controls |
 | `Sidebar.astro` | Categorised nav, optional per-item icons, active highlight |
-| `Footer.astro` | Footer with links and the built-by mark |
+| `Footer.astro` | Footer with links, the identity lockup, the built-by mark and copyright |
 | `ThemePicker.astro` | Site themes grouped by family + curated code themes |
 | `LangToggle.astro` | Language switch (renders only when `langs` is set) |
 | `Switcher.astro` | Generic segmented switcher (renders a `SwitcherConfig`) |
 | `FrameworkPicker.astro` | Framework switch (renders only when `frameworks` is set) |
 | `ScmMenu.astro` | Source-control link (one) or popover menu (many) |
 | `Mark.astro` | Logo/mark image, with the `@kolektiv/brand-core` icon mark as fallback |
-| `BuiltByMark.astro` | Always-on "Built by Kolektiv Computing" mark |
+| `BuiltByMark.astro` | Always-on "Built by Kolektiv Computing" mark; `markClass` sizes the artwork (default `h-10 w-auto`) |
 | `SearchDialog.astro` | Client-side search over the configured nav |
 
 `@kolektiv/common-docs-chrome/astro` also exports `ASTRO_COMPONENTS` (a map of
@@ -529,6 +529,14 @@ active `data-lang` / `data-<id>` / `data-framework`.
 Every Kolektiv documentation site must show the "Built by Kolektiv Computing"
 mark. `Footer.astro` **always** renders `BuiltByMark.astro`; do not remove it.
 Override only the destination/label via `config.builtBy`.
+
+The footer identity column reads top-to-bottom as the `Mark` + `config.name`
+lockup, the tagline, the built-by mark (a slightly larger gap below the
+identity), then the copyright line (a small gap above it). `BuiltByMark` takes
+`markClass` for the artwork classes — default `h-10 w-auto`, matching the brand
+docs footer — and `class` for the `<a>` wrapper. The artwork viewBox is
+2761×1415 (about 1.95:1), so size it by height; never use square `size-*`
+utilities.
 
 ## Brand mark
 
