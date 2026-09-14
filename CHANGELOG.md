@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Curated code themes. Core exports `CodeThemeOption`, `CODE_THEME_OPTIONS`
+  (`follow` plus the Catppuccin flavours, Nord and the Kolektiv palettes) and
+  `codeThemeOptions(config)`, which restricts the list to the themes a site
+  offers (so `themeFamilies` applies) and appends any `config.themes`.
+  `ThemePicker` renders site themes grouped by family — one `menu-title` per
+  family, Catppuccin shown by flavour (for example `Mocha`) — with the curated
+  code themes below `follow`.
+- `RepoConfig.remotes` (`FooterLink[]`). When supplied, `defineDocsChrome`
+  derives `scm` from it, deduplicated by `href` and order-preserving;
+  otherwise it derives a single `{ label: 'Source', href: repo.url }`. An
+  explicit `scm` still wins. `deriveScm(repo)` is exported.
+
+### Changed
+
+- `ScmMenu` renders a single icon link when the deduplicated `scm` list has one
+  entry (previously it always opened a popover); several links keep the popover
+  menu and zero links render nothing. `defineDocsChrome` no longer emits the
+  duplicate `Source` / `yuri.capital` pair for `repo.url`.
+
 ## [0.0.1-SNAPSHOT.5] - 2026-09-14
 
 ### Added

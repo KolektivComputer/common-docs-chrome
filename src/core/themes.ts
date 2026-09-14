@@ -210,6 +210,49 @@ export function siteThemes(
   return [...byId.values()];
 }
 
+export interface CodeThemeOption {
+  id: string;
+  label: string;
+}
+
+/** Curated code themes: follow + the Kolektiv palettes, never daisyUI. */
+export const CODE_THEME_OPTIONS: CodeThemeOption[] = [
+  { id: 'follow', label: 'Follow site theme' },
+  { id: 'catppuccin-latte', label: 'Latte' },
+  { id: 'catppuccin-frappe', label: 'Frappé' },
+  { id: 'catppuccin-macchiato', label: 'Macchiato' },
+  { id: 'catppuccin-mocha', label: 'Mocha' },
+  { id: 'nord', label: 'Nord' },
+  { id: 'kolektiv-light', label: 'Kolektiv Light' },
+  { id: 'kolektiv-dark', label: 'Kolektiv Dark' },
+];
+
+/**
+ * Curated code themes limited to themes that exist for this site, plus any
+ * `config.themes`, preserving order and keeping `follow` first.
+ */
+export function codeThemeOptions(
+  config: Pick<
+    DocsChromeConfig,
+    'themes' | 'themeFamilies' | 'themeFamily'
+  > = {},
+): CodeThemeOption[] {
+  const available = new Set(siteThemes(config).map((theme) => theme.id));
+  const options: CodeThemeOption[] = [];
+  const seen = new Set<string>();
+  for (const option of CODE_THEME_OPTIONS) {
+    if (option.id !== 'follow' && !available.has(option.id)) continue;
+    options.push(option);
+    seen.add(option.id);
+  }
+  for (const theme of config.themes ?? []) {
+    if (seen.has(theme.id)) continue;
+    options.push({ id: theme.id, label: theme.label });
+    seen.add(theme.id);
+  }
+  return options;
+}
+
 function themeCssForOne(theme: ChromeTheme): string {
   const ids = [theme.id, ...(theme.aliases ?? [])];
   const selectors = ids.flatMap((id) => [

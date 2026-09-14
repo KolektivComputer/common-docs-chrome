@@ -73,6 +73,59 @@ describe('defineDocsChrome', () => {
     expect(config.scm?.[0]?.href).toBe('https://github.com/KolektivComputer/keel');
   });
 
+  it('derives a single Source link from repo.url', () => {
+    const cfg = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      repo: { url: 'https://github.com/KolektivComputer/keel' },
+    });
+    expect(cfg.scm).toEqual([
+      { label: 'Source', href: 'https://github.com/KolektivComputer/keel' },
+    ]);
+  });
+
+  it('derives scm from repo.remotes, deduped and ordered', () => {
+    const cfg = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      repo: {
+        url: 'https://github.com/KolektivComputer/keel',
+        remotes: [
+          { label: 'GitHub', href: 'https://github.com/KolektivComputer/keel' },
+          { label: 'yuri.capital', href: 'https://yuri.capital/keel' },
+          { label: 'Duplicate', href: 'https://github.com/KolektivComputer/keel' },
+        ],
+      },
+    });
+    expect(cfg.scm).toEqual([
+      { label: 'GitHub', href: 'https://github.com/KolektivComputer/keel' },
+      { label: 'yuri.capital', href: 'https://yuri.capital/keel' },
+    ]);
+  });
+
+  it('lets an explicit scm win over the repo derivation', () => {
+    const scm = [{ label: 'Mirror', href: 'https://mirror.example/keel' }];
+    const cfg = defineDocsChrome({
+      name: 'X',
+      description: 'd',
+      siteUrl: 'https://x.example',
+      defaultTheme: 'dark',
+      nav: [],
+      scm,
+      repo: {
+        url: 'https://github.com/KolektivComputer/keel',
+        remotes: [{ label: 'GitHub', href: 'https://github.com/KolektivComputer/keel' }],
+      },
+    });
+    expect(cfg.scm).toBe(scm);
+  });
+
   it('does not mutate the input', () => {
     const input = {
       name: 'X',

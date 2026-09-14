@@ -1,5 +1,6 @@
 ---
 import {
+  codeThemeOptions,
   groupChromeThemes,
   resolveTheme,
   siteThemes,
@@ -14,14 +15,22 @@ interface Props {
 const { config } = Astro.props;
 const themes = siteThemes(config);
 const groups = groupChromeThemes(themes, config.themeFamilies ?? []);
+const codeThemes = codeThemeOptions(config);
 const defaultCodeTheme = config.defaultCodeTheme ?? 'follow';
-const defaultTheme = resolveTheme(config.defaultTheme, themes) ?? themes[0];
+const defaultTheme = resolveTheme(config.defaultTheme, themes);
 const id = 'kdc-theme-pop';
 const anchor = '--kdc-theme';
+
+/** Catppuccin flavours drop the redundant family prefix. */
+function displayLabel(theme: ChromeTheme): string {
+  return theme.label.replace(/^Catppuccin\s+/, '');
+}
 
 function swatch(theme: ChromeTheme): string {
   return theme.colors?.['base-100'] ?? (theme.scheme === 'dark' ? '#1d232a' : '#ffffff');
 }
+
+const currentLabel = defaultTheme ? displayLabel(defaultTheme) : config.defaultTheme;
 ---
 
 <button
@@ -33,7 +42,7 @@ function swatch(theme: ChromeTheme): string {
   title="Theme"
 >
   <span class="size-2.5 rounded-full bg-primary" aria-hidden="true"></span>
-  <span data-theme-current class="hidden sm:inline">{defaultTheme?.label ?? config.defaultTheme}</span>
+  <span data-theme-current class="hidden sm:inline">{currentLabel}</span>
 </button>
 
 <div
@@ -41,82 +50,56 @@ function swatch(theme: ChromeTheme): string {
   id={id}
   role="dialog"
   aria-label="Choose theme"
-  class="dropdown dropdown-end dropdown-bottom max-h-[min(32rem,80dvh)] w-96 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-box border-2 border-base-300 bg-base-100 p-3 shadow-lg"
+  class="dropdown dropdown-end dropdown-bottom w-56 max-w-[calc(100vw-2rem)] rounded-box border-2 border-base-300 bg-base-100 p-2 shadow-lg"
   style={`position-anchor:${anchor}`}
 >
-  <fieldset class="m-0 border-0 p-0">
-    <legend class="mb-2 font-mono text-xs uppercase tracking-widest text-base-content/60">
-      Site theme
-    </legend>
+  <ul class="menu menu-sm w-full p-0">
     {
       groups.map((group) => (
-        <section class="mb-2">
-          <p class="mb-1 px-1 text-xs font-semibold opacity-70">{group.label}</p>
-          <ul class="menu menu-sm w-full gap-0.5 p-0">
-            {group.themes.map((theme) => (
-              <li>
-                <label class="flex cursor-pointer items-center gap-2">
-                  <input
-                    type="radio"
-                    class="radio radio-xs radio-primary"
-                    name="kdc-site-theme"
-                    data-pref="theme"
-                    data-label={theme.label}
-                    value={theme.id}
-                    checked={theme.id === config.defaultTheme}
-                  />
-                  <span
-                    class="swatch"
-                    style={`background:${swatch(theme)}`}
-                    aria-hidden="true"
-                  />
-                  <span>{theme.label}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <>
+          <li class="menu-title">{group.label}</li>
+          {group.themes.map((theme) => (
+            <li>
+              <label class="flex cursor-pointer items-center gap-2">
+                <input
+                  type="radio"
+                  class="radio radio-xs radio-primary"
+                  name="kdc-site-theme"
+                  data-pref="theme"
+                  data-label={displayLabel(theme)}
+                  value={theme.id}
+                  checked={theme.id === config.defaultTheme}
+                />
+                <span
+                  class="size-3 rounded-full border border-base-content/20"
+                  style={`background:${swatch(theme)}`}
+                  aria-hidden="true"
+                />
+                <span>{displayLabel(theme)}</span>
+              </label>
+            </li>
+          ))}
+        </>
       ))
     }
-  </fieldset>
-
-  <fieldset class="m-0 mt-2 border-t border-base-300 pt-3">
-    <legend class="mb-2 font-mono text-xs uppercase tracking-widest text-base-content/60">
-      Code theme
-    </legend>
-    <ul class="menu menu-sm w-full gap-0.5 p-0">
-      <li>
-        <label class="flex cursor-pointer items-center gap-2">
-          <input
-            type="radio"
-            class="radio radio-xs radio-primary"
-            name="kdc-code-theme"
-            data-pref="codeTheme"
-            data-label="Follow site theme"
-            value="follow"
-            checked={defaultCodeTheme === 'follow'}
-          />
-          <span>Follow site theme</span>
-        </label>
-      </li>
-      {
-        themes.map((theme) => (
-          <li>
-            <label class="flex cursor-pointer items-center gap-2">
-              <input
-                type="radio"
-                class="radio radio-xs radio-primary"
-                name="kdc-code-theme"
-                data-pref="codeTheme"
-                data-label={theme.label}
-                value={theme.id}
-                checked={theme.id === defaultCodeTheme}
-              />
-              <span>{theme.label}</span>
-            </label>
-          </li>
-        ))
-      }
-    </ul>
-  </fieldset>
+    <li class="menu-title mt-2">Code theme</li>
+    {
+      codeThemes.map((option) => (
+        <li>
+          <label class="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              class="radio radio-xs radio-primary"
+              name="kdc-code-theme"
+              data-pref="codeTheme"
+              data-label={option.label}
+              value={option.id}
+              checked={option.id === defaultCodeTheme}
+            />
+            <span>{option.label}</span>
+          </label>
+        </li>
+      ))
+    }
+  </ul>
 </div>

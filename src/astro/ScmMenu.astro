@@ -1,15 +1,16 @@
 ---
-import { isExternal, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+import { isExternal, type DocsChromeConfig, type FooterLink } from '@kolektiv/common-docs-chrome';
 
 interface Props {
   config: DocsChromeConfig;
 }
 
 const { config } = Astro.props;
-const links: { label: string; href: string }[] = [];
+const links: FooterLink[] = [];
 for (const link of config.scm ?? []) {
   if (!links.some((existing) => existing.href === link.href)) links.push(link);
 }
+const single = links.length === 1 ? links[0] : undefined;
 const id = 'kdc-scm-pop';
 const anchor = '--kdc-scm';
 ---
@@ -17,51 +18,78 @@ const anchor = '--kdc-scm';
 {
   links.length > 0 && (
     <>
-      <button
-        type="button"
-        class="btn btn-ghost btn-square btn-sm min-h-11 min-w-11"
-        popovertarget={id}
-        style={`anchor-name:${anchor}`}
-        aria-label="Source code"
-        title="Source"
-      >
-        <svg
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          aria-hidden="true"
+      {single ? (
+        <a
+          href={single.href}
+          target={isExternal(single.href) ? '_blank' : undefined}
+          rel={isExternal(single.href) ? 'noreferrer' : undefined}
+          class="btn btn-ghost btn-square btn-sm min-h-11 min-w-11"
+          aria-label={single.label}
+          title={single.label}
         >
-          <path d="M6 3v12" stroke-linecap="round"></path>
-          <circle cx="6" cy="18" r="3"></circle>
-          <circle cx="18" cy="6" r="3"></circle>
-          <path d="M18 9v3.5a2.5 2.5 0 0 1-2.5 2.5H9" stroke-linecap="round"></path>
-        </svg>
-      </button>
-      <ul
-        popover
-        id={id}
-        class="dropdown dropdown-end dropdown-bottom menu menu-sm w-64 rounded-box border-2 border-base-300 bg-base-100 p-2 shadow-lg"
-        style={`position-anchor:${anchor}`}
-      >
-        <li class="menu-title">Source</li>
-        {links.map((link) => (
-          <li>
-            <a
-              href={link.href}
-              target={isExternal(link.href) ? '_blank' : undefined}
-              rel={isExternal(link.href) ? 'noreferrer' : undefined}
-              class="flex flex-col items-start gap-0.5 py-2"
+          <svg
+            class="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path d="M6 3v12" stroke-linecap="round" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="6" r="3" />
+            <path d="M18 9v3.5a2.5 2.5 0 0 1-2.5 2.5H9" stroke-linecap="round" />
+          </svg>
+        </a>
+      ) : (
+        <>
+          <button
+            type="button"
+            class="btn btn-ghost btn-square btn-sm min-h-11 min-w-11"
+            popovertarget={id}
+            style={`anchor-name:${anchor}`}
+            aria-label="Source code"
+            title="Source"
+          >
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
             >
-              <span class="font-medium">{link.label}</span>
-              <span class="font-mono text-[0.65rem] tracking-wide text-base-content/55">
-                {link.href}
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+              <path d="M6 3v12" stroke-linecap="round" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="6" r="3" />
+              <path d="M18 9v3.5a2.5 2.5 0 0 1-2.5 2.5H9" stroke-linecap="round" />
+            </svg>
+          </button>
+          <ul
+            popover
+            id={id}
+            class="dropdown dropdown-end dropdown-bottom menu menu-sm w-64 rounded-box border-2 border-base-300 bg-base-100 p-2 shadow-lg"
+            style={`position-anchor:${anchor}`}
+          >
+            <li class="menu-title">Source</li>
+            {links.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  target={isExternal(link.href) ? '_blank' : undefined}
+                  rel={isExternal(link.href) ? 'noreferrer' : undefined}
+                  class="flex flex-col items-start gap-0.5 py-2"
+                >
+                  <span class="font-medium">{link.label}</span>
+                  <span class="font-mono text-[0.65rem] tracking-wide text-base-content/55">
+                    {link.href}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </>
   )
 }
