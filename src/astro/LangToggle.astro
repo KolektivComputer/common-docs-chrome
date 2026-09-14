@@ -1,34 +1,14 @@
 ---
-import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+import Switcher from './Switcher.astro';
+import { resolveSwitchers, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
 
 interface Props {
   config: DocsChromeConfig;
   size?: 'xs' | 'sm';
 }
 
-const { config, size = 'xs' } = Astro.props;
-const langs = config.langs ?? [];
-const defaultLang = config.defaultLang ?? langs[0]?.id;
-const btn = size === 'sm' ? 'btn btn-sm min-h-10' : 'btn btn-xs min-h-8';
+const { config, size } = Astro.props;
+const lang = resolveSwitchers(config).find((switcher) => switcher.id === 'lang');
 ---
 
-{
-  langs.length > 0 && (
-    <div class="join" role="group" aria-label="Language" data-kdc-toggle="lang">
-      {langs.map((lang) => (
-        <label class:list={[btn, 'join-item kdc-toggle px-3']}>
-          <input
-            type="radio"
-            class="sr-only"
-            name="kdc-lang"
-            data-pref="lang"
-            data-label={lang.label}
-            value={lang.id}
-            checked={lang.id === defaultLang}
-          />
-          <span>{lang.label}</span>
-        </label>
-      ))}
-    </div>
-  )
-}
+{lang && <Switcher config={config} switcher={lang} size={size} />}

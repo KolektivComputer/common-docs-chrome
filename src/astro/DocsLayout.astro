@@ -8,6 +8,7 @@ import Mark from './Mark.astro';
 import {
   pageLabelFor,
   path,
+  resolveSwitchers,
   toggleRelevanceScript,
   type DocsChromeConfig,
 } from '@kolektiv/common-docs-chrome';
@@ -25,6 +26,14 @@ const currentPath = Astro.props.currentPath ?? Astro.url.pathname;
 const label = Astro.props.pageLabel ?? pageLabelFor(config, currentPath);
 const defaultLang = config.defaultLang ?? config.langs?.[0]?.id;
 const defaultFramework = config.defaultFramework ?? config.frameworks?.[0]?.id;
+const switcherAttrs = Object.fromEntries(
+  resolveSwitchers(config)
+    .filter((switcher) => switcher.id !== 'lang' && switcher.id !== 'framework')
+    .map((switcher) => [
+      `data-${switcher.id}`,
+      switcher.default ?? switcher.options[0]?.id ?? '',
+    ]),
+);
 const drawerId = 'kdc-drawer';
 ---
 
@@ -35,6 +44,7 @@ const drawerId = 'kdc-drawer';
   data-code-theme={config.defaultCodeTheme ?? 'follow'}
   data-lang={defaultLang}
   data-framework={defaultFramework}
+  {...switcherAttrs}
   class="antialiased"
 >
   <head>

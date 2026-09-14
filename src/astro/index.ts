@@ -16,6 +16,7 @@ export const ASTRO_COMPONENTS = {
   Footer: '@kolektiv/common-docs-chrome/astro/Footer.astro',
   ThemePicker: '@kolektiv/common-docs-chrome/astro/ThemePicker.astro',
   LangToggle: '@kolektiv/common-docs-chrome/astro/LangToggle.astro',
+  Switcher: '@kolektiv/common-docs-chrome/astro/Switcher.astro',
   FrameworkPicker: '@kolektiv/common-docs-chrome/astro/FrameworkPicker.astro',
   ScmMenu: '@kolektiv/common-docs-chrome/astro/ScmMenu.astro',
   Mark: '@kolektiv/common-docs-chrome/astro/Mark.astro',

@@ -35,6 +35,28 @@ export interface FooterConfig {
   tagline?: string;
 }
 
+/** A single option inside a generic documentation switcher. */
+export interface SwitcherOption {
+  id: string;
+  label: string;
+}
+
+/**
+ * A named either/or (or n-option) switch rendered by the chrome. Every
+ * switcher gets an `<html data-<id>>` attribute and a matching
+ * `[data-<id>-panel]` visibility contract, mirroring the built-in language
+ * pair.
+ */
+export interface SwitcherConfig {
+  /** Stable id, used for the html attribute `data-<id>` and `[data-<id>-panel]`. */
+  id: string;
+  /** Group label for a11y; defaults to the id. */
+  label?: string;
+  options: SwitcherOption[];
+  /** Defaults to options[0].id. */
+  default?: string;
+}
+
 export interface RepoConfig {
   /** Clone / browse URL, e.g. `https://github.com/KolektivComputer/kalendee`. */
   url: string;
@@ -87,6 +109,12 @@ export interface DocsChromeConfig {
   frameworks?: { id: string; label: string }[];
   defaultLang?: string;
   defaultFramework?: string;
+  /**
+   * Additional generic switchers (e.g. TypeScript/JavaScript or
+   * Kotlin/Groovy build scripts). The built-in `lang` switcher is derived from
+   * `langs`; ids reserved for the built-in controls are ignored here.
+   */
+  switchers?: SwitcherConfig[];
   /** Source-control links for the SCM menu. Derived from `repo` when omitted. */
   scm?: FooterLink[];
   footer?: FooterConfig;
@@ -159,19 +187,70 @@ function cssEscape(value: string): string {
 }
 
 /**
- * Generate the visibility rules for `[data-lang-panel]` / `[data-framework-panel]`
- * blocks. The ids are only known at build time, so the rules are injected by the
- * layout rather than shipped in `chrome.css`.
+ * Switcher ids owned by the built-in controls: `lang` (LangToggle), `framework`
+ * (FrameworkPicker), `theme` and `codeTheme` (ThemePicker). They already have
+ * dedicated preference keys, `<html>` attributes and no-flash handling, so a
+ * generic switcher may not take them over — a custom switcher reusing one would
+ * collide with the `[data-pref]` routing and silently hijack the built-in
+ * control.
+ */
+export const RESERVED_SWITCHER_IDS = ['lang', 'framework', 'theme', 'codeTheme'] as const;
+
+function isReservedSwitcherId(id: string): boolean {
+  return (RESERVED_SWITCHER_IDS as readonly string[]).includes(id);
+}
+
+/**
+ * Resolve the ordered switcher list for a config: the implicit `lang` switcher
+ * (when `langs` is set) followed by every configured generic switcher.
+ * Switchers with no options and switchers using a reserved id are ignored.
+ */
+export function resolveSwitchers(config: DocsChromeConfig): SwitcherConfig[] {
+  const switchers: SwitcherConfig[] = [];
+  const seen = new Set<string>();
+  const langs = config.langs ?? [];
+  if (langs.length > 0) {
+    switchers.push({
+      id: 'lang',
+      label: 'Language',
+      options: langs,
+      default: config.defaultLang,
+    });
+    seen.add('lang');
+  }
+  for (const switcher of config.switchers ?? []) {
+    if (!switcher) continue;
+    const options = Array.isArray(switcher.options) ? switcher.options : [];
+    if (options.length === 0) continue;
+    if (isReservedSwitcherId(switcher.id)) continue;
+    if (seen.has(switcher.id)) continue;
+    seen.add(switcher.id);
+    switchers.push({ ...switcher, options });
+  }
+  return switchers;
+}
+
+/**
+ * Generate the visibility rules for every switcher panel (`[data-<id>-panel]`)
+ * plus the framework panels. The ids are only known at build time, so the rules
+ * are injected by the layout rather than shipped in `chrome.css`. The built-in
+ * `lang` switcher emits the exact legacy `data-lang-panel` selectors.
  */
 export function visibilityCss(config: DocsChromeConfig): string {
-  const rules: string[] = [
-    '[data-lang-panel],[data-framework-panel]{display:none}',
-  ];
-  for (const lang of config.langs ?? []) {
-    const id = cssEscape(lang.id);
-    rules.push(
-      `html[data-lang="${id}"] [data-lang-panel="all"],html[data-lang="${id}"] [data-lang-panel="${id}"]{display:block}`,
-    );
+  const switchers = resolveSwitchers(config);
+  const base = [
+    ...switchers.map((switcher) => `[data-${cssEscape(switcher.id)}-panel]`),
+    '[data-framework-panel]',
+  ].join(',');
+  const rules: string[] = [`${base}{display:none}`];
+  for (const switcher of switchers) {
+    const switcherId = cssEscape(switcher.id);
+    for (const option of switcher.options) {
+      const id = cssEscape(option.id);
+      rules.push(
+        `html[data-${switcherId}="${id}"] [data-${switcherId}-panel="all"],html[data-${switcherId}="${id}"] [data-${switcherId}-panel="${id}"]{display:block}`,
+      );
+    }
   }
   for (const framework of config.frameworks ?? []) {
     const id = cssEscape(framework.id);

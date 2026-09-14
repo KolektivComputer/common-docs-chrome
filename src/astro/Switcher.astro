@@ -1,0 +1,46 @@
+---
+import type { DocsChromeConfig, SwitcherConfig } from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+  switcher: SwitcherConfig;
+  size?: 'xs' | 'sm';
+}
+
+const { switcher, size = 'xs' } = Astro.props;
+const options = switcher.options;
+const selected = switcher.default ?? options[0]?.id;
+const btn = size === 'sm' ? 'btn btn-sm min-h-10' : 'btn btn-xs min-h-8';
+const pref =
+  switcher.id === 'lang'
+    ? 'lang'
+    : switcher.id === 'framework'
+      ? 'framework'
+      : `sw:${switcher.id}`;
+---
+
+{
+  options.length > 0 && (
+    <div
+      class="join"
+      role="group"
+      aria-label={switcher.label ?? switcher.id}
+      data-kdc-toggle={switcher.id}
+    >
+      {options.map((option) => (
+        <label class:list={[btn, 'join-item kdc-toggle px-3']}>
+          <input
+            type="radio"
+            class="sr-only"
+            name={'kdc-' + switcher.id}
+            data-pref={pref}
+            data-label={option.label}
+            value={option.id}
+            checked={option.id === selected}
+          />
+          <span>{option.label}</span>
+        </label>
+      ))}
+    </div>
+  )
+}

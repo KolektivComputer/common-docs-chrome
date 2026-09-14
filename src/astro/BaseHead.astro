@@ -1,7 +1,8 @@
 ---
 import {
+  buildNoFlashScript,
   isBuiltinPalette,
-  noFlashScript,
+  resolveSwitchers,
   resolveTheme,
   shikiThemeCss,
   siteThemes,
@@ -39,6 +40,22 @@ const paletteCss = themeCssFor(
 );
 const codeCss = shikiThemeCss(themes);
 const visCss = visibilityCss(config);
+const switchers = resolveSwitchers(config).filter(
+  (switcher) => switcher.id !== 'lang' && switcher.id !== 'framework',
+);
+const defaultSwitchers = Object.fromEntries(
+  switchers.map((switcher) => [
+    switcher.id,
+    switcher.default ?? switcher.options[0]?.id ?? '',
+  ]),
+);
+const switcherAllowed = Object.fromEntries(
+  switchers.map((switcher) => [switcher.id, switcher.options.map((option) => option.id)]),
+);
+const noFlash = buildNoFlashScript(
+  undefined,
+  switchers.map((switcher) => switcher.id),
+);
 const init = {
   defaultTheme: config.defaultTheme,
   defaultCodeTheme: config.defaultCodeTheme ?? 'follow',
@@ -47,6 +64,9 @@ const init = {
   themes: themes.map((theme) => theme.id),
   langs: (config.langs ?? []).map((lang) => lang.id),
   frameworks: (config.frameworks ?? []).map((framework) => framework.id),
+  switchers: switchers.map((switcher) => switcher.id),
+  defaultSwitchers,
+  switcherAllowed,
 };
 ---
 
@@ -71,7 +91,7 @@ const init = {
 <meta name="twitter:description" content={description} />
 {ogImage && <meta name="twitter:image" content={ogImage} />}
 
-<script is:inline set:html={noFlashScript} />
+<script is:inline set:html={noFlash} />
 <script id="kdc-init" type="application/json" is:inline set:html={JSON.stringify(init).replace(/</g, '\\u003c')} />
 <style is:inline set:html={paletteCss}></style>
 <style is:inline set:html={codeCss}></style>

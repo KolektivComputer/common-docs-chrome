@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Generic documentation switchers. `DocsChromeConfig.switchers` accepts any
+  number of named switches (`SwitcherConfig`/`SwitcherOption`) in addition to
+  the built-in language pair; each gets an `<html data-<id>>` attribute, a
+  `[data-<id>-panel]` visibility contract (via `resolveSwitchers` /
+  `visibilityCss`) and `data-pref="sw:<id>"` controls backed by `kdc:<id>`
+  prefs. `ChromePrefs` gains `switchers` and `PrefOptions` gains
+  `switcherAllowed` / `defaultSwitchers`; `buildNoFlashScript(keys?, switchers?)`
+  and `initToggleRelevance` cover every switcher kind. New `Switcher.astro`;
+  `LangToggle.astro` now delegates to it. Backward compatible: `langs`,
+  `defaultLang`, `[data-lang-panel]`, `PREF_KEYS`, `noFlashScript`,
+  `initChrome`, `visibilityCss` and `LangToggle` keep working unchanged.
+
 ## [0.0.1-SNAPSHOT.3] - 2026-09-14
 
 ### Changed
