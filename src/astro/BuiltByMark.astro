@@ -5,9 +5,10 @@ import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
 interface Props {
   config?: DocsChromeConfig;
   class?: string;
+  markClass?: string;
 }
 
-const { config, class: className = '' } = Astro.props;
+const { config, class: className = '', markClass = 'h-10 w-auto' } = Astro.props;
 const builtBy = config?.builtBy ?? {};
 const href = builtBy.href ?? 'https://kolektiv.computer';
 const label = builtBy.label ?? 'Built by Kolektiv Computing';
@@ -16,7 +17,7 @@ const mark = renderBrandMark({
   variant: 'builtByMark',
   title: label,
   color: 'currentColor',
-  className: 'h-5 w-auto',
+  className: markClass,
 });
 ---
 
@@ -29,7 +30,7 @@ const mark = renderBrandMark({
 >
   {
     builtBy.mark ? (
-      <img src={builtBy.mark} alt="" class="size-5 shrink-0" />
+      <img src={builtBy.mark} alt="" class:list={['shrink-0', markClass]} />
     ) : (
       <Fragment set:html={mark} />
     )
