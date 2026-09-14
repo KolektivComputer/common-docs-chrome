@@ -1,0 +1,76 @@
+{
+  "name": "@kolektiv/common-docs-chrome",
+  "version": "0.0.1-SNAPSHOT.1",
+  "description": "Framework-agnostic core and Astro components for Kolektiv documentation chrome.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "src/astro",
+    "src/styles",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./astro": "./src/astro/index.ts",
+    "./astro/*": "./src/astro/*",
+    "./styles/*": "./src/styles/*",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "playground:build": "pnpm --filter @kolektiv/common-docs-chrome-playground build",
+    "playground:dev": "pnpm --filter @kolektiv/common-docs-chrome-playground dev",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "kolektiv",
+    "documentation",
+    "astro",
+    "daisyui",
+    "tailwind",
+    "chrome",
+    "themes"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KolektivComputer/common-docs-chrome.git"
+  },
+  "publishConfig": {
+    "registry": "https://repo.yuri.capital/repository/keel-npm/",
+    "access": "public"
+  },
+  "dependencies": {
+    "@kolektiv/themes": "^0.0.1-SNAPSHOT.2"
+  },
+  "peerDependencies": {
+    "astro": ">=5",
+    "daisyui": "^5",
+    "tailwindcss": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.1",
+    "astro": "^7.3.2",
+    "daisyui": "^5.7.37",
+    "happy-dom": "^20.14.5",
+    "tailwindcss": "^4.3.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22"
+  }
+}

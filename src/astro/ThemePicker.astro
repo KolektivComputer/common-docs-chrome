@@ -1,0 +1,122 @@
+---
+import {
+  groupChromeThemes,
+  resolveTheme,
+  siteThemes,
+  type ChromeTheme,
+  type DocsChromeConfig,
+} from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+}
+
+const { config } = Astro.props;
+const themes = siteThemes(config);
+const groups = groupChromeThemes(themes, config.themeFamilies ?? []);
+const defaultCodeTheme = config.defaultCodeTheme ?? 'follow';
+const defaultTheme = resolveTheme(config.defaultTheme, themes) ?? themes[0];
+const id = 'kdc-theme-pop';
+const anchor = '--kdc-theme';
+
+function swatch(theme: ChromeTheme): string {
+  return theme.colors?.['base-100'] ?? (theme.scheme === 'dark' ? '#1d232a' : '#ffffff');
+}
+---
+
+<button
+  type="button"
+  class="btn btn-ghost btn-sm min-h-11 gap-2 px-3"
+  popovertarget={id}
+  style={`anchor-name:${anchor}`}
+  aria-label="Theme"
+  title="Theme"
+>
+  <span class="size-2.5 rounded-full bg-primary" aria-hidden="true"></span>
+  <span data-theme-current class="hidden sm:inline">{defaultTheme?.label ?? config.defaultTheme}</span>
+</button>
+
+<div
+  popover
+  id={id}
+  role="dialog"
+  aria-label="Choose theme"
+  class="dropdown dropdown-end dropdown-bottom max-h-[min(32rem,80dvh)] w-64 overflow-y-auto rounded-box border-2 border-base-300 bg-base-100 p-3 shadow-lg"
+  style={`position-anchor:${anchor}`}
+>
+  <fieldset class="m-0 border-0 p-0">
+    <legend class="mb-2 font-mono text-xs uppercase tracking-widest text-base-content/60">
+      Site theme
+    </legend>
+    {
+      groups.map((group) => (
+        <section class="mb-2">
+          <p class="mb-1 px-1 text-xs font-semibold opacity-70">{group.label}</p>
+          <ul class="menu menu-sm w-full gap-0.5 p-0">
+            {group.themes.map((theme) => (
+              <li>
+                <label class="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="radio"
+                    class="radio radio-xs radio-primary"
+                    name="kdc-site-theme"
+                    data-pref="theme"
+                    data-label={theme.label}
+                    value={theme.id}
+                    checked={theme.id === config.defaultTheme}
+                  />
+                  <span
+                    class="swatch"
+                    style={`background:${swatch(theme)}`}
+                    aria-hidden="true"
+                  />
+                  <span>{theme.label}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </fieldset>
+
+  <fieldset class="m-0 mt-2 border-t border-base-300 pt-3">
+    <legend class="mb-2 font-mono text-xs uppercase tracking-widest text-base-content/60">
+      Code theme
+    </legend>
+    <ul class="menu menu-sm w-full gap-0.5 p-0">
+      <li>
+        <label class="flex cursor-pointer items-center gap-2">
+          <input
+            type="radio"
+            class="radio radio-xs radio-primary"
+            name="kdc-code-theme"
+            data-pref="codeTheme"
+            data-label="Follow site theme"
+            value="follow"
+            checked={defaultCodeTheme === 'follow'}
+          />
+          <span>Follow site theme</span>
+        </label>
+      </li>
+      {
+        themes.map((theme) => (
+          <li>
+            <label class="flex cursor-pointer items-center gap-2">
+              <input
+                type="radio"
+                class="radio radio-xs radio-primary"
+                name="kdc-code-theme"
+                data-pref="codeTheme"
+                data-label={theme.label}
+                value={theme.id}
+                checked={theme.id === defaultCodeTheme}
+              />
+              <span>{theme.label}</span>
+            </label>
+          </li>
+        ))
+      }
+    </ul>
+  </fieldset>
+</div>

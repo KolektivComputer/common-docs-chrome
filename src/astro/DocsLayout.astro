@@ -1,0 +1,93 @@
+---
+import BaseHead from './BaseHead.astro';
+import Navbar from './Navbar.astro';
+import Footer from './Footer.astro';
+import Sidebar from './Sidebar.astro';
+import SearchDialog from './SearchDialog.astro';
+import Mark from './Mark.astro';
+import { pageLabelFor, path, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+  title: string;
+  description?: string;
+  currentPath?: string;
+  pageLabel?: string;
+}
+
+const { config } = Astro.props;
+const currentPath = Astro.props.currentPath ?? Astro.url.pathname;
+const label = Astro.props.pageLabel ?? pageLabelFor(config, currentPath);
+const defaultLang = config.defaultLang ?? config.langs?.[0]?.id;
+const defaultFramework = config.defaultFramework ?? config.frameworks?.[0]?.id;
+const drawerId = 'kdc-drawer';
+---
+
+<!doctype html>
+<html
+  lang="en"
+  data-theme={config.defaultTheme}
+  data-code-theme={config.defaultCodeTheme ?? 'follow'}
+  data-lang={defaultLang}
+  data-framework={defaultFramework}
+  class="antialiased"
+>
+  <head>
+    <BaseHead
+      config={config}
+      title={Astro.props.title}
+      description={Astro.props.description}
+    />
+  </head>
+  <body class="min-h-dvh bg-base-100 font-sans text-base-content">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 btn btn-sm"
+    >
+      Skip to content
+    </a>
+
+    <div class="drawer lg:drawer-open">
+      <input id={drawerId} type="checkbox" class="drawer-toggle" />
+      <div class="drawer-content flex min-h-dvh flex-col">
+        <Navbar config={config} currentPath={currentPath} pageLabel={label} drawerId={drawerId} hideBrandOnDesktop />
+        <main id="main" class="flex-1 px-4 py-8 sm:px-8 lg:px-10">
+          <div class="kdc-prose mx-auto max-w-3xl">
+            <slot />
+          </div>
+        </main>
+        <Footer config={config} />
+      </div>
+
+      <div class="drawer-side z-40">
+        <label for={drawerId} class="drawer-overlay" aria-label="Close docs menu"></label>
+        <aside class="flex h-dvh w-72 flex-col overflow-hidden bg-base-200">
+          <a
+            href={path('/', config.base)}
+            class="flex items-stretch gap-3 border-b border-base-300 px-5 py-5"
+          >
+            <span class="aspect-square self-stretch">
+              <Mark config={config} class="size-14" />
+            </span>
+            <span class="flex min-w-0 flex-col justify-center">
+              <span class="font-display text-2xl leading-none tracking-tight">
+                {config.name}
+              </span>
+              <span
+                class="mt-1 font-mono text-[0.65rem] font-medium uppercase tracking-[0.18em] text-base-content/70"
+              >
+                Documentation
+              </span>
+            </span>
+          </a>
+          <div class="border-b border-base-300 px-3 py-3">
+            <SearchDialog config={config} />
+          </div>
+          <div class="min-h-0 flex-1 overflow-y-auto">
+            <Sidebar config={config} currentPath={currentPath} />
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

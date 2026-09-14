@@ -1,0 +1,88 @@
+---
+import { isExternal, path, stripBase, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+  /** Current pathname. Defaults to `Astro.url.pathname`. */
+  currentPath?: string;
+}
+
+const { config } = Astro.props;
+const currentPath = Astro.props.currentPath ?? Astro.url.pathname;
+const current = stripBase(currentPath, config.base);
+
+function isActive(href: string): boolean {
+  if (isExternal(href)) return false;
+  const rel = stripBase(href, config.base);
+  const a = current !== '/' ? current.replace(/\/+$/, '') : '/';
+  const b = rel !== '/' ? rel.replace(/\/+$/, '') : '/';
+  return a === b;
+}
+---
+
+<nav aria-label="Documentation">
+  <ul class="menu menu-sm w-full gap-0 px-2 py-3 text-base leading-snug">
+    {
+      config.nav.map((section) => (
+        <li class="mt-3 first:mt-0">
+          <h2 class="menu-title flex flex-row items-center gap-2 px-2 py-1.5 font-sans text-sm font-bold normal-case tracking-normal text-base-content opacity-100">
+            {section.icon && (
+              <svg
+                viewBox="0 0 24 24"
+                class="size-4 shrink-0 fill-none stroke-current"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d={section.icon} />
+              </svg>
+            )}
+            {section.label}
+          </h2>
+          <ul class="mt-0">
+            {section.items.map((item) => (
+              <li>
+                <a
+                  href={isExternal(item.href) ? item.href : path(item.href, config.base)}
+                  target={isExternal(item.href) ? '_blank' : undefined}
+                  rel={isExternal(item.href) ? 'noreferrer' : undefined}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                  class:list={[
+                    'min-h-0 justify-start py-1.5 text-start',
+                    isActive(item.href) && 'menu-active bg-base-100 font-medium',
+                  ]}
+                >
+                  {item.icon && (
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="size-4 shrink-0 fill-none stroke-current"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d={item.icon} />
+                    </svg>
+                  )}
+                  <span class="truncate">{item.label}</span>
+                  {isExternal(item.href) && (
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="ml-auto size-3.5 shrink-0 stroke-current"
+                      fill="none"
+                      stroke-width="1.8"
+                      aria-hidden="true"
+                    >
+                      <path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

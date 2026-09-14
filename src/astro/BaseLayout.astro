@@ -1,0 +1,51 @@
+---
+import BaseHead from './BaseHead.astro';
+import Navbar from './Navbar.astro';
+import Footer from './Footer.astro';
+import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const { config } = Astro.props;
+const defaultLang = config.defaultLang ?? config.langs?.[0]?.id;
+const defaultFramework = config.defaultFramework ?? config.frameworks?.[0]?.id;
+---
+
+<!doctype html>
+<html
+  lang="en"
+  data-theme={config.defaultTheme}
+  data-code-theme={config.defaultCodeTheme ?? 'follow'}
+  data-lang={defaultLang}
+  data-framework={defaultFramework}
+  class="antialiased"
+>
+  <head>
+    <BaseHead
+      config={config}
+      title={Astro.props.title}
+      description={Astro.props.description}
+      image={Astro.props.image}
+    />
+  </head>
+  <body class="flex min-h-dvh flex-col bg-base-100 font-sans text-base-content">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 btn btn-sm"
+    >
+      Skip to content
+    </a>
+    <Navbar config={config} />
+    <main id="main" class="flex-1 px-4 py-12 sm:px-8 lg:px-10">
+      <div class="mx-auto max-w-4xl">
+        <slot />
+      </div>
+    </main>
+    <Footer config={config} />
+  </body>
+</html>

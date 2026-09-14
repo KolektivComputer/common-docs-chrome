@@ -1,0 +1,16 @@
+---
+import DocsLayout from '@kolektiv/common-docs-chrome/astro/DocsLayout.astro';
+
+import { docs } from '../../docs-chrome';
+import '../../styles/global.css';
+---
+
+<DocsLayout config={docs} title="Install" description="Run the Kalendee server locally.">
+  <h1>Install</h1>
+  <p>Run the server with Gradle:</p>
+  <pre class="astro-code"><code>./gradlew :server:run</code></pre>
+  <p>
+    Then open <a href="http://localhost:8080">localhost:8080</a>. The default theme
+    is <strong>{docs.defaultTheme}</strong>.
+  </p>
+</DocsLayout>

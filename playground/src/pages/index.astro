@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@kolektiv/common-docs-chrome/astro/BaseLayout.astro';
+
+import { docs } from '../docs-chrome';
+import '../styles/global.css';
+---
+
+<BaseLayout config={docs} title="Overview">
+  <p class="font-mono text-xs uppercase tracking-[0.2em] text-base-content/60">
+    Documentation chrome playground
+  </p>
+  <h1 class="display mt-3 text-5xl">Kalendee</h1>
+  <p class="mt-4 max-w-2xl text-lg text-base-content/80">
+    This private playground builds the shipped components and core against a real
+    Astro + Tailwind 4 + daisyUI 5 setup. It is not published.
+  </p>
+  <div class="mt-8 flex flex-wrap gap-3">
+    <a class="btn btn-primary" href="/docs">Read the docs</a>
+    <a class="btn btn-ghost" href="/docs/install">Install</a>
+  </div>
+</BaseLayout>

@@ -1,0 +1,208 @@
+/*
+ * @kolektiv/common-docs-chrome — structural chrome styles.
+ *
+ * Import AFTER `@import "tailwindcss";` in the consumer's global stylesheet:
+ *
+ *   @import "tailwindcss";
+ *   @import "@kolektiv/common-docs-chrome/styles/chrome.css";
+ *
+ * This file owns the daisyUI plugin declaration and the theme palette import.
+ * Do not declare `@plugin "daisyui"` a second time in the consumer stylesheet.
+ */
+
+@import "@kolektiv/themes/theme.css";
+
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+  logs: false;
+}
+
+/* Let Tailwind scan the shipped components for class names. Paths are relative
+ * to this file (works from node_modules because the package is symlinked). */
+@source "../astro";
+
+:root {
+  --radius-selector: 0.25rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 2px;
+  --depth: 0;
+  --noise: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Theme swatches (used by ThemePicker) ---- */
+
+.swatch {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-base-content) 30%, transparent);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.swatch:hover {
+  transform: scale(1.12);
+}
+
+.swatch[data-selected='true'] {
+  border-color: var(--color-base-content);
+}
+
+/* ---- Segmented toggles (language / framework) ---- */
+
+.kdc-toggle:has(input:checked) {
+  background-color: var(--color-base-content);
+  color: var(--color-base-100);
+}
+
+.kdc-toggle:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ---- Code blocks ---- */
+
+.kdc-prose :where(pre.astro-code),
+.kdc-code pre,
+.kdc-code .astro-code {
+  margin: 0;
+  border-radius: 0;
+  padding: 1rem 1.1rem 1.15rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.65;
+}
+
+.kdc-prose :where(pre.astro-code) {
+  margin: 1.25rem 0;
+  border-radius: var(--radius-box);
+  border: var(--border) solid var(--color-base-300);
+}
+
+.kdc-prose :where(code):not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--color-base-300);
+  padding: 0.1em 0.35em;
+  border-radius: 0.3rem;
+}
+
+/* ---- Prose typography ---- */
+
+.kdc-prose :where(h2, h3) {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  text-wrap: balance;
+  line-height: 1.15;
+}
+
+.kdc-prose :where(h2) {
+  font-size: 1.65rem;
+}
+
+.kdc-prose :where(h3) {
+  font-size: 1.25rem;
+}
+
+.kdc-prose :where(p, ul, ol) {
+  margin-bottom: 1rem;
+  color: color-mix(in oklab, var(--color-base-content) 82%, transparent);
+}
+
+.kdc-prose :where(ul) {
+  list-style: disc;
+  padding-left: 1.2rem;
+}
+
+.kdc-prose :where(ol) {
+  list-style: decimal;
+  padding-left: 1.2rem;
+}
+
+.kdc-prose :where(li + li) {
+  margin-top: 0.35rem;
+}
+
+.kdc-prose :where(a) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.kdc-prose :where(strong) {
+  color: var(--color-base-content);
+  font-weight: 600;
+}
+
+.kdc-prose :where(table) {
+  width: 100%;
+  margin: 1.25rem 0 1.5rem;
+  font-size: 0.9rem;
+}
+
+.kdc-prose :where(th, td) {
+  padding: 0.7rem 0.85rem;
+  border-bottom: var(--border) solid var(--color-base-300);
+  text-align: left;
+  vertical-align: top;
+}
+
+.kdc-prose :where(th) {
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+}
+
+.kdc-prose :where(blockquote) {
+  margin: 1.25rem 0;
+  padding-left: 1rem;
+  border-left: var(--border) solid var(--color-base-300);
+  color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+
+/* ---- Panels toggled by prefs (see `visibilityCss` in core) ---- */
+
+[data-lang-panel],
+[data-framework-panel] {
+  display: none;
+}
+
+/* ---- Popovers ---- */
+
+[popover].dropdown:popover-open {
+  display: flex;
+  opacity: 1;
+  visibility: visible;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

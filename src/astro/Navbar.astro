@@ -1,0 +1,58 @@
+---
+import Mark from './Mark.astro';
+import LangToggle from './LangToggle.astro';
+import FrameworkPicker from './FrameworkPicker.astro';
+import ScmMenu from './ScmMenu.astro';
+import ThemePicker from './ThemePicker.astro';
+import { pageLabelFor, path, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+  currentPath?: string;
+  /** Override the label shown for the current page. */
+  pageLabel?: string;
+  /** When set, the brand lockup toggles this drawer id on mobile. */
+  drawerId?: string;
+  hideBrandOnDesktop?: boolean;
+}
+
+const { config, drawerId, hideBrandOnDesktop = false } = Astro.props;
+const currentPath = Astro.props.currentPath ?? Astro.url.pathname;
+const label = Astro.props.pageLabel ?? pageLabelFor(config, currentPath);
+const brandClass = hideBrandOnDesktop
+  ? 'flex items-center gap-3 min-h-11 lg:hidden'
+  : 'flex items-center gap-3 min-h-11';
+---
+
+<div
+  class="navbar sticky top-0 z-30 min-h-16 border-b-2 border-base-300 bg-base-100/90 px-3 backdrop-blur-sm sm:px-6"
+>
+  <div class="navbar-start gap-2 sm:gap-3">
+    {
+      drawerId ? (
+        <label for={drawerId} class={brandClass} aria-label="Open docs menu">
+          <Mark config={config} />
+          <span class="font-display text-xl tracking-tight">{config.name}</span>
+        </label>
+      ) : (
+        <a href={path('/', config.base)} class={brandClass}>
+          <Mark config={config} />
+          <span class="font-display text-xl tracking-tight">{config.name}</span>
+        </a>
+      )
+    }
+  </div>
+
+  <div class="navbar-center hidden min-w-0 sm:flex">
+    <span class="truncate font-display text-lg" aria-current="page">{label}</span>
+  </div>
+
+  <div class="navbar-end gap-1">
+    <div class="hidden sm:block">
+      <LangToggle config={config} />
+    </div>
+    <FrameworkPicker config={config} />
+    <ScmMenu config={config} />
+    <ThemePicker config={config} />
+  </div>
+</div>

@@ -1,0 +1,16 @@
+---
+import DocsLayout from '@kolektiv/common-docs-chrome/astro/DocsLayout.astro';
+
+import { docs } from '../docs-chrome';
+import '../styles/global.css';
+
+const { frontmatter } = Astro.props;
+---
+
+<DocsLayout
+  config={docs}
+  title={frontmatter.title ?? 'Docs'}
+  description={frontmatter.description ?? docs.description}
+>
+  <slot />
+</DocsLayout>

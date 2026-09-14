@@ -1,0 +1,37 @@
+---
+import DocsLayout from '@kolektiv/common-docs-chrome/astro/DocsLayout.astro';
+
+import { docs } from '../../docs-chrome';
+import '../../styles/global.css';
+---
+
+<DocsLayout config={docs} title="Overview">
+  <h1>Kalendee documentation</h1>
+  <p>
+    Welcome to the playground. The sidebar, navbar, theme picker and search dialog
+    above are all components from
+    <code>@kolektiv/common-docs-chrome</code>.
+  </p>
+  <h2>Language and framework panels</h2>
+  <p>
+    The pickers switch <code>data-lang</code> and <code>data-framework</code> on the
+    root element. Panels below use the convention expected by
+    <code>visibilityCss</code>.
+  </p>
+  <div class="not-prose mt-4 rounded-box border border-base-300 p-4">
+    <div data-lang-panel="kts">
+      <pre class="kdc-code"><code>val calendar = Calendar("work")</code></pre>
+    </div>
+    <div data-lang-panel="bash">
+      <pre class="kdc-code"><code>kalendee --data ./data</code></pre>
+    </div>
+  </div>
+  <div class="not-prose mt-4 rounded-box border border-base-300 p-4">
+    <div data-framework-panel="compose">
+      <pre class="kdc-code"><code>CalendarView(calendar = calendar)</code></pre>
+    </div>
+    <div data-framework-panel="web">
+      <pre class="kdc-code"><code>&lt;Calendar calendar=&#123;calendar&#125; /&gt;</code></pre>
+    </div>
+  </div>
+</DocsLayout>

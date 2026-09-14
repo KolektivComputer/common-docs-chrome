@@ -1,0 +1,45 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Pack and inspect the tarball without publishing
+        type: boolean
+        default: false
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Publish npm
+        env:
+          YURI_CAPITAL_REPO_USERNAME: ${{ secrets.YURI_CAPITAL_REPO_USERNAME }}
+          YURI_CAPITAL_REPO_PASSWORD: ${{ secrets.YURI_CAPITAL_REPO_PASSWORD }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: bash .github/scripts/publish-npm.sh
+      - name: Verify npm resolution
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: bash .github/scripts/verify-npm-resolution.sh

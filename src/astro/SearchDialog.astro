@@ -1,0 +1,233 @@
+---
+import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+
+export interface SearchEntry {
+  id: string;
+  title: string;
+  href: string;
+  category: string;
+  description: string;
+}
+
+interface Props {
+  config: DocsChromeConfig;
+  /** Override or extend the generated index. */
+  index?: SearchEntry[];
+}
+
+const { config } = Astro.props;
+const generated: SearchEntry[] = [];
+for (const section of config.nav ?? []) {
+  for (const item of section.items ?? []) {
+    if (item.external) continue;
+    generated.push({
+      id: item.href,
+      title: item.label,
+      href: item.href,
+      category: section.label,
+      description: item.description ?? '',
+    });
+  }
+}
+const entries = Astro.props.index ?? generated;
+const starters = entries.slice(0, 6);
+---
+
+<button
+  type="button"
+  class="btn btn-ghost btn-sm min-h-10 w-full justify-start gap-2 px-2 font-normal text-base-content/70"
+  data-kdc-search-open
+  aria-haspopup="dialog"
+  aria-controls="kdc-search"
+>
+  <svg
+    class="size-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    aria-hidden="true"
+  >
+    <circle cx="11" cy="11" r="7"></circle>
+    <path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
+  </svg>
+  Search docs
+  <kbd class="kbd kbd-sm ml-auto hidden sm:inline" data-kdc-search-hotkey>Ctrl K</kbd>
+</button>
+
+<dialog id="kdc-search" class="modal" aria-label="Search documentation">
+  <div class="modal-box flex max-h-[min(36rem,calc(100dvh-4rem))] flex-col overflow-hidden p-0 sm:max-w-xl">
+    <form method="dialog" class="absolute right-3 top-3 z-10">
+      <button type="submit" class="btn btn-ghost btn-square btn-sm" aria-label="Close search">
+        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
+    </form>
+    <div class="border-b-2 border-base-300 px-4 py-3 pr-14">
+      <label class="sr-only" for="kdc-search-input">Search docs</label>
+      <input
+        id="kdc-search-input"
+        class="input input-ghost h-11 w-full px-0 text-base"
+        type="search"
+        placeholder="Search the docs"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        data-kdc-search-input
+      />
+    </div>
+    <div class="min-h-0 flex-1 overflow-y-auto px-2 py-2" data-kdc-search-results>
+      <p class="px-3 py-2 font-mono text-xs uppercase tracking-widest text-base-content/50">
+        {config.name}
+      </p>
+      <ul class="menu menu-sm w-full">
+        {starters.map((entry) => (
+          <li>
+            <a href={entry.href} data-kdc-search-hit>
+              <span class="flex min-w-0 flex-col gap-0.5">
+                <span class="font-medium">{entry.title}</span>
+                <span class="truncate text-xs text-base-content/55">
+                  {entry.category}
+                  {entry.description ? ` · ${entry.description}` : ''}
+                </span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button type="submit">Close</button>
+  </form>
+</dialog>
+
+<script id="kdc-search-index" type="application/json" is:inline set:html={JSON.stringify(entries).replace(/</g, '\\u003c')} />
+
+<script>
+  interface Entry {
+    id: string;
+    title: string;
+    href: string;
+    category: string;
+    description: string;
+  }
+
+  const dialog = document.getElementById('kdc-search') as HTMLDialogElement | null;
+  const input = document.querySelector<HTMLInputElement>('[data-kdc-search-input]');
+  const results = document.querySelector<HTMLElement>('[data-kdc-search-results]');
+  const indexNode = document.getElementById('kdc-search-index');
+  const index: Entry[] = indexNode?.textContent ? JSON.parse(indexNode.textContent) : [];
+
+  let hits: Entry[] = index.slice(0, 6);
+  let active = -1;
+
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function itemHtml(entry: Entry): string {
+    const meta = entry.description
+      ? `${escapeHtml(entry.category)} · ${escapeHtml(entry.description)}`
+      : escapeHtml(entry.category);
+    return `<li><a href="${escapeHtml(entry.href)}" data-kdc-search-hit><span class="flex min-w-0 flex-col gap-0.5"><span class="font-medium">${escapeHtml(entry.title)}</span><span class="truncate text-xs text-base-content/55">${meta}</span></span></a></li>`;
+  }
+
+  function render(entries: Entry[], empty: boolean): void {
+    if (!results) return;
+    hits = entries;
+    active = entries.length > 0 ? 0 : -1;
+    if (entries.length === 0) {
+      results.innerHTML = `<p class="px-4 py-8 text-sm text-base-content/60">${empty ? 'No pages match your search.' : ''}</p>`;
+      return;
+    }
+    results.innerHTML = `<ul class="menu menu-sm w-full">${entries.map(itemHtml).join('')}</ul>`;
+    highlight();
+  }
+
+  function highlight(): void {
+    if (!results) return;
+    const items = [...results.querySelectorAll<HTMLAnchorElement>('[data-kdc-search-hit]')];
+    items.forEach((el, i) => {
+      el.classList.toggle('menu-active', i === active);
+      if (i === active) el.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
+  function search(query: string): Entry[] {
+    const q = query.trim().toLowerCase();
+    if (!q) return index.slice(0, 6);
+    return index
+      .filter((entry) =>
+        `${entry.title} ${entry.category} ${entry.description}`.toLowerCase().includes(q),
+      )
+      .slice(0, 8);
+  }
+
+  function openSearch(): void {
+    if (!dialog) return;
+    dialog.showModal();
+    if (input) {
+      input.value = '';
+      render(index.slice(0, 6), false);
+      window.setTimeout(() => input.focus(), 0);
+    }
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('[data-kdc-search-open]')) {
+      event.preventDefault();
+      openSearch();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const inField =
+      event.target instanceof HTMLElement &&
+      event.target.matches('input, textarea, select, [contenteditable=true]');
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      if (dialog?.open) dialog.close();
+      else openSearch();
+      return;
+    }
+    if (event.key === '/' && !inField && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      openSearch();
+      return;
+    }
+    if (!dialog?.open) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (hits.length === 0) return;
+      active = (active + 1) % hits.length;
+      highlight();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (hits.length === 0) return;
+      active = (active - 1 + hits.length) % hits.length;
+      highlight();
+    } else if (event.key === 'Enter' && active >= 0) {
+      const href = hits[active]?.href;
+      if (href) {
+        event.preventDefault();
+        dialog.close();
+        window.location.assign(href);
+      }
+    }
+  });
+
+  input?.addEventListener('input', () => {
+    const query = input.value;
+    render(search(query), Boolean(query.trim()));
+  });
+
+  const hotkey = document.querySelector('[data-kdc-search-hotkey]');
+  if (hotkey && /Mac|iPhone|iPad/.test(navigator.platform)) hotkey.textContent = '⌘K';
+</script>

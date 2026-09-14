@@ -1,0 +1,54 @@
+---
+import Mark from './Mark.astro';
+import BuiltByMark from './BuiltByMark.astro';
+import { isExternal, path, type DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+}
+
+const { config } = Astro.props;
+const year = new Date().getFullYear();
+const copyright = (config.footer?.copyright ?? '© {year} Kolektiv Computing').replace(
+  '{year}',
+  String(year),
+);
+const links = config.footer?.links ?? [];
+---
+
+<footer class="mt-auto border-t border-base-300 bg-base-200">
+  <div
+    class="footer sm:footer-horizontal mx-auto max-w-6xl gap-6 px-4 py-10 text-sm text-base-content/70 sm:px-6"
+  >
+    <aside class="max-w-sm">
+      <div class="flex items-center gap-3 text-base-content">
+        <Mark config={config} />
+        <span class="font-display text-xl tracking-tight">{config.name}</span>
+      </div>
+      {config.footer?.tagline && <p class="mt-3">{config.footer.tagline}</p>}
+      <BuiltByMark config={config} class="mt-4" />
+    </aside>
+
+    {
+      links.length > 0 && (
+        <nav aria-label="Footer">
+          <h2 class="footer-title opacity-70">Links</h2>
+          {links.map((link) => (
+            <a
+              class="link link-hover"
+              href={isExternal(link.href) ? link.href : path(link.href, config.base)}
+              target={isExternal(link.href) ? '_blank' : undefined}
+              rel={isExternal(link.href) ? 'noreferrer' : undefined}
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      )
+    }
+
+    <div class="w-full border-t border-base-300 pt-4 text-xs sm:w-auto sm:border-0 sm:pt-0">
+      <p>{copyright}</p>
+    </div>
+  </div>
+</footer>

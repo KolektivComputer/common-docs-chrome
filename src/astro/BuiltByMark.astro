@@ -1,0 +1,34 @@
+---
+import Mark from './Mark.astro';
+import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config?: DocsChromeConfig;
+  class?: string;
+}
+
+const { config, class: className = '' } = Astro.props;
+const builtBy = config?.builtBy ?? {};
+const href = builtBy.href ?? 'https://kolektiv.computer';
+const label = builtBy.label ?? 'Built by Kolektiv Computing';
+const external = /^[a-z][a-z0-9+.-]*:/i.test(href);
+---
+
+<a
+  href={href}
+  class:list={['inline-flex items-center gap-2 text-current', className]}
+  rel={external ? 'noreferrer' : undefined}
+  target={external ? '_blank' : undefined}
+  aria-label={label}
+>
+  {
+    builtBy.mark ? (
+      <img src={builtBy.mark} alt="" class="size-5 shrink-0" />
+    ) : (
+      <Mark config={config} class="size-5" />
+    )
+  }
+  <span class="text-sm leading-none">
+    Built by <span class="font-semibold">Kolektiv</span> Computing
+  </span>
+</a>

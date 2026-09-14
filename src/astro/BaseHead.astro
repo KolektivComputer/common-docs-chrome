@@ -1,0 +1,91 @@
+---
+import {
+  isBuiltinPalette,
+  noFlashScript,
+  resolveTheme,
+  shikiThemeCss,
+  siteThemes,
+  themeCssFor,
+  visibilityCss,
+  type DocsChromeConfig,
+} from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+  title?: string;
+  description?: string;
+  image?: string;
+  canonical?: string;
+}
+
+const { config, image, canonical } = Astro.props;
+const description = Astro.props.description ?? config.description;
+const pageTitle =
+  Astro.props.title && Astro.props.title !== config.name
+    ? `${Astro.props.title} · ${config.name}`
+    : config.name;
+
+const site = Astro.site ?? new URL(config.siteUrl);
+const pageUrl = canonical ?? new URL(Astro.url.pathname, site).href;
+
+const themes = siteThemes(config);
+const defaultTheme = resolveTheme(config.defaultTheme, themes);
+const themeColor = defaultTheme?.colors?.['base-100'];
+const icon = config.mark ?? config.logo;
+const ogImage = image ?? icon;
+
+const paletteCss = themeCssFor(
+  themes.filter((theme) => !isBuiltinPalette(theme.id) && theme.family !== 'daisyui'),
+);
+const codeCss = shikiThemeCss(themes);
+const visCss = visibilityCss(config);
+const init = {
+  defaultTheme: config.defaultTheme,
+  defaultCodeTheme: config.defaultCodeTheme ?? 'follow',
+  defaultLang: config.defaultLang,
+  defaultFramework: config.defaultFramework,
+  themes: themes.map((theme) => theme.id),
+  langs: (config.langs ?? []).map((lang) => lang.id),
+  frameworks: (config.frameworks ?? []).map((framework) => framework.id),
+};
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content={description} />
+<meta name="generator" content="common-docs-chrome" />
+{themeColor && <meta name="theme-color" content={themeColor} />}
+<title>{pageTitle}</title>
+<link rel="canonical" href={pageUrl} />
+{icon && <link rel="icon" href={icon} />}
+{icon && <link rel="apple-touch-icon" href={icon} />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={config.name} />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={pageUrl} />
+{ogImage && <meta property="og:image" content={ogImage} />}
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={pageTitle} />
+<meta name="twitter:description" content={description} />
+{ogImage && <meta name="twitter:image" content={ogImage} />}
+
+<script is:inline set:html={noFlashScript} />
+<script id="kdc-init" type="application/json" is:inline set:html={JSON.stringify(init).replace(/</g, '\\u003c')} />
+<style is:inline set:html={paletteCss}></style>
+<style is:inline set:html={codeCss}></style>
+<style is:inline set:html={visCss}></style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+<script>
+  import { initChrome } from '@kolektiv/common-docs-chrome';
+
+  const node = document.getElementById('kdc-init');
+  if (node?.textContent) {
+    initChrome(JSON.parse(node.textContent));
+  }
+</script>
+
+<slot />
