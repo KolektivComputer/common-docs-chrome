@@ -57,6 +57,17 @@ html {
   border-color: var(--color-base-content);
 }
 
+/* ---- Sidebar active link ---- */
+
+/* daisyUI's `.menu-active` colours the label with `neutral-content`, which is
+ * unreadable on the `base-100` pill Sidebar pairs it with in some themes (for
+ * example kolektiv-dark). Force the base foreground/background pair. Scoped to
+ * `aria-current`, which search-dialog hits do not set, so they keep daisyUI's
+ * readable `neutral` / `neutral-content` pair. */
+.menu a[aria-current='page'] {
+  color: var(--color-base-content);
+}
+
 /* ---- Segmented toggles (language / framework) ---- */
 
 .kdc-toggle:has(input:checked) {
