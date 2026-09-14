@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1-SNAPSHOT.3] - 2026-09-14
+
+### Changed
+
+- feat: render the brand mark from `@kolektiv/brand-core`. `Mark.astro` and
+  `BuiltByMark.astro` no longer vendor Kolektiv SVG artwork; the brand package
+  is the single source of truth for the mark.
+
 ## [0.0.1-SNAPSHOT.2] - 2026-09-14
 
 ### Changed

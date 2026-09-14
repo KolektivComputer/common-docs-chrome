@@ -1,4 +1,5 @@
 ---
+import { renderBrandVariant } from '@kolektiv/brand-core';
 import { path, isExternal } from '@kolektiv/common-docs-chrome';
 import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
 
@@ -19,21 +20,17 @@ const resolved = configured
     ? configured
     : path(configured, config?.base)
   : undefined;
+const fallback = renderBrandVariant('iconMark', {
+  title: alt || undefined,
+  color: 'currentColor',
+  className: ['shrink-0', className].join(' '),
+});
 ---
 
 {
   resolved ? (
     <img src={resolved} alt={alt} class:list={['shrink-0', className]} />
   ) : (
-    <svg
-      viewBox="0 0 468 681"
-      class:list={['shrink-0', className]}
-      fill="currentColor"
-      role={alt ? 'img' : undefined}
-      aria-label={alt || undefined}
-      aria-hidden={alt ? undefined : 'true'}
-    >
-      <path d="M132 0C167.346 0 196 28.6538 196 64C196 87.9153 182.882 108.765 163.449 119.751L129.744 394.103L341.386 205.305C340.478 201.013 340 196.562 340 192C340 156.654 368.654 128 404 128C439.346 128 468 156.654 468 192C468 227.346 439.346 256 404 256C396.549 256 389.396 254.726 382.746 252.386L259.547 364.002L356.063 553.504C387.603 557.469 412 584.385 412 617C412 652.346 383.346 681 348 681C312.654 681 284 652.346 284 617C284 609.696 285.224 602.677 287.478 596.139L198.125 412.66L118.801 483.171L108.062 570.583C120.342 582.244 128 598.728 128 617C128 652.346 99.3462 681 64 681C28.6538 681 0 652.346 0 617C0 592.476 13.7938 571.174 34.0459 560.429L89.1904 111.574C76.1804 99.8596 68 82.8853 68 64C68 28.6538 96.6538 0 132 0Z"></path>
-    </svg>
+    <Fragment set:html={fallback} />
   )
 }

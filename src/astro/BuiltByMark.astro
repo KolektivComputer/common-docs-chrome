@@ -1,5 +1,5 @@
 ---
-import Mark from './Mark.astro';
+import { renderBrandMark } from '@kolektiv/brand-core';
 import type { DocsChromeConfig } from '@kolektiv/common-docs-chrome';
 
 interface Props {
@@ -12,6 +12,12 @@ const builtBy = config?.builtBy ?? {};
 const href = builtBy.href ?? 'https://kolektiv.computer';
 const label = builtBy.label ?? 'Built by Kolektiv Computing';
 const external = /^[a-z][a-z0-9+.-]*:/i.test(href);
+const mark = renderBrandMark({
+  variant: 'builtByMark',
+  title: label,
+  color: 'currentColor',
+  className: 'h-5 w-auto',
+});
 ---
 
 <a
@@ -25,10 +31,7 @@ const external = /^[a-z][a-z0-9+.-]*:/i.test(href);
     builtBy.mark ? (
       <img src={builtBy.mark} alt="" class="size-5 shrink-0" />
     ) : (
-      <Mark config={config} class="size-5" />
+      <Fragment set:html={mark} />
     )
   }
-  <span class="text-sm leading-none">
-    Built by <span class="font-semibold">Kolektiv</span> Computing
-  </span>
 </a>

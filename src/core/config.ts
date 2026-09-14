@@ -46,7 +46,7 @@ export interface RepoConfig {
 export interface BuiltByConfig {
   href?: string;
   label?: string;
-  /** Optional logo URL for the built-by mark. Falls back to the inline mark. */
+  /** Optional logo URL for the built-by mark. Falls back to `@kolektiv/brand-core`. */
   mark?: string;
 }
 
@@ -66,7 +66,7 @@ export interface DocsChromeConfig {
   base?: string;
   /** Logo/wordmark URL for the navbar. */
   logo?: string;
-  /** Icon/logo URL used by the mark. Falls back to the inline Kolektiv mark. */
+  /** Icon/logo URL used by the mark. Falls back to the `@kolektiv/brand-core` icon mark. */
   mark?: string;
   repo?: RepoConfig;
   nav: NavSection[];

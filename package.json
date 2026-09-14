@@ -1,6 +1,6 @@
 {
   "name": "@kolektiv/common-docs-chrome",
-  "version": "0.0.1-SNAPSHOT.2",
+  "version": "0.0.1-SNAPSHOT.3",
   "description": "Framework-agnostic core and Astro components for Kolektiv documentation chrome.",
   "license": "MIT",
   "type": "module",
@@ -52,6 +52,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@kolektiv/brand-core": "^0.1.0",
     "@kolektiv/themes": "^0.0.1-SNAPSHOT.2"
   },
   "peerDependencies": {

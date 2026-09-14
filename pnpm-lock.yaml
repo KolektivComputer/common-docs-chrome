@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@kolektiv/brand-core':
+        specifier: ^0.1.0
+        version: 0.1.0
       '@kolektiv/themes':
         specifier: ^0.0.1-SNAPSHOT.2
         version: 0.0.1-SNAPSHOT.2
@@ -788,6 +791,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@kolektiv/brand-core@0.1.0':
+    resolution: {integrity: sha512-PO+95Kv6H8py4BiNFag1jx5CQHupoTYrPgKgchn6DQKulwkuJWouukQJ5DaE4T2jwQN3KMBAmiTGTY7UaPaJSA==}
 
   '@kolektiv/themes@0.0.1-SNAPSHOT.2':
     resolution: {integrity: sha512-4vEkdHZeUcVsldRET+eb5Xbjo1JDwv/A2qVAOBv0pvLmcT91S+FVK/eJ/NsbXBG2gCxMvhoYrcgQ78uxQqH7JQ==}
@@ -3099,6 +3105,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@kolektiv/brand-core@0.1.0': {}
 
   '@kolektiv/themes@0.0.1-SNAPSHOT.2': {}
 

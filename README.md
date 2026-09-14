@@ -21,6 +21,10 @@ pnpm add @kolektiv/common-docs-chrome @kolektiv/themes
 pnpm add astro tailwindcss daisyui
 ```
 
+`@kolektiv/brand-core` (the Kolektiv brand mark renderer) is installed
+transitively as a dependency; you only need it directly if you render the mark
+yourself.
+
 Requirements: Node >= 22, Astro >= 5, Tailwind CSS 4, daisyUI 5.
 
 The package resolves `@kolektiv/*` from the aggregate registry
@@ -227,7 +231,7 @@ Every component lives at `@kolektiv/common-docs-chrome/astro/<Name>.astro`:
 | `LangToggle.astro` | Language switch (renders only when `langs` is set) |
 | `FrameworkPicker.astro` | Framework switch (renders only when `frameworks` is set) |
 | `ScmMenu.astro` | Source-control menu (renders when `scm`/`repo` is set) |
-| `Mark.astro` | Logo/mark image, with the inline Kolektiv mark as fallback |
+| `Mark.astro` | Logo/mark image, with the `@kolektiv/brand-core` icon mark as fallback |
 | `BuiltByMark.astro` | Always-on "Built by Kolektiv Computing" mark |
 | `SearchDialog.astro` | Client-side search over the configured nav |
 
@@ -244,7 +248,7 @@ component names to import paths).
 | `siteUrl` | `string` | — | Required. Canonical origin. |
 | `base` | `string` | `/` | Astro base path. |
 | `logo` | `string` | — | Logo/wordmark URL for the navbar. |
-| `mark` | `string` | — | Icon URL; falls back to the inline Kolektiv mark. |
+| `mark` | `string` | — | Icon URL; falls back to the `@kolektiv/brand-core` icon mark. |
 | `repo` | `RepoConfig` | — | `{ url, branch?, editBaseUrl? }`. |
 | `nav` | `NavSection[]` | `[]` | Sidebar/nav model. |
 | `defaultTheme` | `string` | — | Required. Applied on first visit + SSR. |
@@ -353,6 +357,30 @@ block matching the active `data-lang` / `data-framework`.
 Every Kolektiv documentation site must show the "Built by Kolektiv Computing"
 mark. `Footer.astro` **always** renders `BuiltByMark.astro`; do not remove it.
 Override only the destination/label via `config.builtBy`.
+
+## Brand mark
+
+The Kolektiv brand artwork is not vendored here. `Mark.astro` and
+`BuiltByMark.astro` render it with `renderBrandMark` from
+[`@kolektiv/brand-core`](https://github.com/KolektivComputer/brand):
+
+```astro
+---
+import { renderBrandMark } from '@kolektiv/brand-core';
+const mark = renderBrandMark({ variant: 'builtByMark', title: 'Built by Kolektiv Computing', color: 'currentColor' });
+---
+<Fragment set:html={mark} />
+```
+
+`renderBrandMark` returns an SSR-safe SVG string (`variant` is one of `full`,
+`builtByMark`, `computingWordmark`, `wordmark` or `iconMark`; a `title` adds
+`role="img"`/`aria-label`, otherwise the mark is `aria-hidden`). `renderBrandMark`
+always emits the full built-by canvas, so `Mark.astro` uses the tightly-cropped
+`renderBrandVariant('iconMark', …)` instead; `BuiltByMark.astro` uses the
+`builtByMark` variant. The components pass the site's configured
+`mark`/`logo`/`builtBy.mark` image through first; the brand renderer is the
+fallback. This keeps `@kolektiv/brand-core` the single source of truth for the
+mark.
 
 ## Publishing this package
 
