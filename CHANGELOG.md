@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1-SNAPSHOT.7] - 2026-09-14
+
 ### Changed
 
 - Bigger footer built-by mark. `BuiltByMark` defaults the artwork to
