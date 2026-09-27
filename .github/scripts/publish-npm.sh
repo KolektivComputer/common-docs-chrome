@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Publish @kolektiv/common-docs-chrome to the hosted Nexus `keel-npm` repo.
+# Publish @kolektiv/common-docs-chrome to the Kolektiv Nexus npm-public.
 # The repo `.npmrc` maps `@kolektiv` to the `npm-public` group for fetching, so
-# we temporarily append the hosted `keel-npm` mapping (with auth).
+# we temporarily append the npm-public mapping (with auth).
 #
 # DRY_RUN=true (or 1) packs the tarball and lists its contents without
 # publishing or requiring credentials.
 set -euo pipefail
 
-HOST="repo.yuri.capital"
-REGISTRY="https://${HOST}/repository/keel-npm/"
+HOST="repo.kolektiv.computer"
+REGISTRY="https://${HOST}/repository/npm-public/"
 PACKAGE="@kolektiv/common-docs-chrome"
 VERSION="$(node -p "require('./package.json').version")"
 

@@ -4,7 +4,7 @@
 # Kolektiv repos.
 set -uo pipefail
 
-REGISTRY="https://repo.yuri.capital/repository/npm-public/"
+REGISTRY="https://repo.kolektiv.computer/repository/npm-public/"
 PACKAGE="@kolektiv/common-docs-chrome"
 
 VERSION="${1:-}"

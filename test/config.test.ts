@@ -98,14 +98,14 @@ describe('defineDocsChrome', () => {
         url: 'https://github.com/KolektivComputer/keel',
         remotes: [
           { label: 'GitHub', href: 'https://github.com/KolektivComputer/keel' },
-          { label: 'yuri.capital', href: 'https://yuri.capital/keel' },
+          { label: 'kolektiv.computer', href: 'https://kolektiv.computer/keel' },
           { label: 'Duplicate', href: 'https://github.com/KolektivComputer/keel' },
         ],
       },
     });
     expect(cfg.scm).toEqual([
       { label: 'GitHub', href: 'https://github.com/KolektivComputer/keel' },
-      { label: 'yuri.capital', href: 'https://yuri.capital/keel' },
+      { label: 'kolektiv.computer', href: 'https://kolektiv.computer/keel' },
     ]);
   });
 

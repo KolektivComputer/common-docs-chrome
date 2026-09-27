@@ -28,10 +28,10 @@ yourself.
 Requirements: Node >= 22, Astro >= 5, Tailwind CSS 4, daisyUI 5.
 
 The package resolves `@kolektiv/*` from the aggregate registry
-`https://repo.yuri.capital/repository/npm-public/`. Add to your `.npmrc`:
+`https://repo.kolektiv.computer/repository/npm-public/`. Add to your `.npmrc`:
 
 ```ini
-@kolektiv:registry=https://repo.yuri.capital/repository/npm-public/
+@kolektiv:registry=https://repo.kolektiv.computer/repository/npm-public/
 ```
 
 ## Consumer setup
@@ -374,7 +374,7 @@ repo: {
   url: 'https://github.com/KolektivComputer/keel',
   remotes: [
     { label: 'GitHub', href: 'https://github.com/KolektivComputer/keel' },
-    { label: 'yuri.capital', href: 'https://yuri.capital/keel' },
+    { label: 'kolektiv.computer', href: 'https://kolektiv.computer/keel' },
   ],
 },
 ```
@@ -564,9 +564,9 @@ mark.
 
 ## Publishing this package
 
-- Registry: `https://repo.yuri.capital/repository/keel-npm/` (via
+- Registry: `https://repo.kolektiv.computer/repository/npm-public/` (via
   `publishConfig.registry`).
-- Fetch is anonymous from `https://repo.yuri.capital/repository/npm-public/`.
+- Fetch is anonymous from `https://repo.kolektiv.computer/repository/npm-public/`.
 - `pnpm build` → `dist/` (ESM + d.ts) with tsup.
 - `.github/workflows/publish.yml` publishes on `v*` tags or manual dispatch and
   supports `DRY_RUN`. It uses `YURI_CAPITAL_REPO_USERNAME` /

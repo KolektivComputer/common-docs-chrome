@@ -1,6 +1,6 @@
 {
   "name": "@kolektiv/common-docs-chrome",
-  "version": "0.0.1-SNAPSHOT.9",
+  "version": "0.0.1-SNAPSHOT.10",
   "description": "Framework-agnostic core and Astro components for Kolektiv documentation chrome.",
   "license": "MIT",
   "type": "module",
@@ -48,7 +48,7 @@
     "url": "git+https://github.com/KolektivComputer/common-docs-chrome.git"
   },
   "publishConfig": {
-    "registry": "https://repo.yuri.capital/repository/keel-npm/",
+    "registry": "https://repo.kolektiv.computer/repository/npm-public/",
     "access": "public"
   },
   "dependencies": {

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1-SNAPSHOT.10] - 2026-09-27
+
+### Changed
+
+- Publish and consume via `https://repo.kolektiv.computer/repository/npm-public/`.
+
+
 ## [0.0.1-SNAPSHOT.9] - 2026-09-14
 
 ### Fixed
