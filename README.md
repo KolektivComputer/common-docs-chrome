@@ -178,8 +178,118 @@ import '../styles/global.css';
 const { frontmatter } = Astro.props;
 ---
 
-<DocsLayout config={docs} title={frontmatter.title} description={frontmatter.description}>
+<DocsLayout
+  config={docs}
+  title={frontmatter.title}
+  description={frontmatter.description}
+  headings={Astro.props.headings}
+>
   <slot />
+</DocsLayout>
+```
+
+`Astro.props.headings` is supplied by Astro for Markdown pages; forwarding it
+gives every page the automatic table of contents. Add `toc={false}` to a page to
+opt out.
+
+## Content components
+
+### Tables
+
+Plain Markdown tables are styled by `chrome.css` with no page changes. Every
+column except the last is treated as a key/type/default column: it shrinks to
+content and does not wrap. The last column is treated as prose, wraps at a
+comfortable measure, and the table scrolls inside its own box when the columns
+cannot fit — the page itself never scrolls sideways.
+
+When a table does not follow that convention, use `DocsTable` and describe each
+column explicitly:
+
+```astro
+---
+import DocsTable from '@kolektiv/common-docs-chrome/astro/DocsTable.astro';
+
+const rows = [
+  ['ktor.deployment.port', 'Int', '8080', 'TCP port the HTTP server binds to.'],
+  ['ktor.deployment.host', 'String', '0.0.0.0', 'Interface the server binds to.'],
+];
+---
+
+<DocsTable
+  caption="Deployment settings."
+  columns={[
+    { label: 'Key', width: 'narrow' },
+    { label: 'Type', width: 'narrow' },
+    { label: 'Default', width: 'narrow' },
+    { label: 'Meaning', width: 'prose' },
+  ]}
+  rows={rows}
+/>
+```
+
+`width` is `narrow` (shrink + nowrap), `prose` (wrap at 16–20ch on mobile and
+20–48ch above 640px), or omitted (`prose`). `align` accepts `left`, `center` or
+`right`. Cells are plain strings or numbers and are escaped by Astro.
+
+### Overview cards
+
+`CardGrid` lays out overview cards at one column on phones, two at `sm`, and
+three at `lg` (pass `columns={2}` to stop at two). `DocsCard` renders one link
+card and never inherits prose bullets or underlines:
+
+```astro
+---
+import CardGrid from '@kolektiv/common-docs-chrome/astro/CardGrid.astro';
+import DocsCard from '@kolektiv/common-docs-chrome/astro/DocsCard.astro';
+import { docs } from '../docs-chrome';
+---
+
+<CardGrid>
+  <DocsCard
+    config={docs}
+    title="Install"
+    description="Run the server locally."
+    href="/docs/install"
+    icon="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"
+  />
+  <DocsCard
+    config={docs}
+    title="Configuration"
+    description="Server and deployment settings."
+    href="/docs/config"
+  />
+</CardGrid>
+```
+
+`icon` is inline SVG path data for a 24×24 viewBox, matching `NavItem.icon`.
+External links are detected with `isExternal`; `external` forces the behaviour.
+
+### Table of contents
+
+`DocsLayout` renders an "On this page" table of contents from `headings` by
+default. Markdown pages only need to forward `Astro.props.headings` from their
+layout wrapper. At 1024px and wider it is a sticky right-hand sidebar with the
+active section highlighted; below that it collapses into an "On this page"
+block above the content. `toc={false}` opts a page out.
+
+`.astro` pages have no generated headings, so pass them explicitly and give the
+matching elements `id`s:
+
+```astro
+---
+import DocsLayout from '@kolektiv/common-docs-chrome/astro/DocsLayout.astro';
+import { docs } from '../docs-chrome';
+import type { TocHeading } from '@kolektiv/common-docs-chrome';
+
+const headings: TocHeading[] = [
+  { depth: 2, slug: 'deployment', text: 'Deployment' },
+  { depth: 3, slug: 'database', text: 'Database' },
+];
+---
+
+<DocsLayout config={docs} title="Configuration" headings={headings}>
+  <h2 id="deployment">Deployment</h2>
+  <h3 id="database">Database</h3>
 </DocsLayout>
 ```
 
@@ -190,7 +300,8 @@ const { frontmatter } = Astro.props;
 Config:
 
 - `DocsChromeConfig`, `NavSection`, `NavItem`, `NavbarConfig`, `FooterConfig`,
-  `FooterLink`, `RepoConfig`, `BuiltByConfig`, `SwitcherConfig`, `SwitcherOption`
+  `FooterLink`, `RepoConfig`, `BuiltByConfig`, `SwitcherConfig`, `SwitcherOption`,
+  `TocHeading`
 - `defineDocsChrome(config)` — fills defaults, returns a normalised config
 - `pageLabelFor(config, pathname)`, `findNavItem(config, pathname)`
 - `resolveNavbar(config, override?)` — navbar flags + links, layered over
@@ -246,7 +357,10 @@ Every component lives at `@kolektiv/common-docs-chrome/astro/<Name>.astro`:
 | --- | --- |
 | `BaseHead.astro` | SEO/OG/canonical meta, no-flash script, theme + Shiki CSS |
 | `BaseLayout.astro` | Marketing/landing shell (navbar + main + footer) |
-| `DocsLayout.astro` | Primary docs shell (sidebar lockup, navbar, footer) |
+| `DocsLayout.astro` | Primary docs shell (sidebar lockup, navbar, auto ToC, footer) |
+| `DocsTable.astro` | Table with explicit narrow/prose columns and an internal scroll box |
+| `CardGrid.astro` | Responsive 1/2/3-column grid for overview cards |
+| `DocsCard.astro` | Link card with title, description and optional icon |
 | `Navbar.astro` | Sticky navbar with the current page label and controls |
 | `Sidebar.astro` | Categorised nav, optional per-item icons, active highlight |
 | `Footer.astro` | Footer with links, the identity lockup, the built-by mark and copyright |

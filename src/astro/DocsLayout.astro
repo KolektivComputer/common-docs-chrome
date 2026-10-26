@@ -12,6 +12,7 @@ import {
   toggleRelevanceScript,
   type DocsChromeConfig,
   type NavbarConfig,
+  type TocHeading,
 } from '@kolektiv/common-docs-chrome';
 
 interface Props {
@@ -22,6 +23,10 @@ interface Props {
   pageLabel?: string;
   /** Per-page navbar override, merged over `config.navbar`. */
   navbar?: Partial<NavbarConfig>;
+  /** Astro Markdown headings, or hand-authored h2/h3 entries for `.astro` pages. */
+  headings?: TocHeading[];
+  /** Auto ToC on by default; `false` opts a page out. */
+  toc?: boolean;
 }
 
 const { config, navbar } = Astro.props;
@@ -38,6 +43,10 @@ const switcherAttrs = Object.fromEntries(
     ]),
 );
 const drawerId = 'kdc-drawer';
+const headings = (Astro.props.headings ?? []).filter(
+  (heading) => (heading.depth === 2 || heading.depth === 3) && heading.slug && heading.text,
+);
+const showToc = Astro.props.toc !== false && headings.length > 0;
 ---
 
 <!doctype html>
@@ -88,8 +97,55 @@ const drawerId = 'kdc-drawer';
           <slot name="navbar-end" slot="navbar-end" />
         </Navbar>
         <main id="main" class="flex-1 px-4 py-8 sm:px-8 lg:px-10">
-          <div class="kdc-prose mx-auto max-w-3xl">
-            <slot />
+          <div
+            class:list={[
+              'mx-auto w-full',
+              showToc ? 'flex max-w-5xl items-start gap-8' : 'max-w-3xl',
+            ]}
+          >
+            <div class="min-w-0 flex-1">
+              {
+                showToc && (
+                  <details class="kdc-toc-mobile not-prose mb-8 rounded-box border border-base-300 bg-base-200/60 px-4 py-3 lg:hidden">
+                    <summary class="cursor-pointer text-sm font-medium">On this page</summary>
+                    <nav aria-label="On this page" class="mt-3">
+                      <ul class="kdc-toc-list">
+                        {headings.map((heading) => (
+                          <li class:list={[heading.depth === 3 && 'is-h3']}>
+                            <a href={`#${heading.slug}`} data-kdc-toc-link={heading.slug}>
+                              {heading.text}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </nav>
+                  </details>
+                )
+              }
+              <article class="kdc-prose mx-auto max-w-3xl">
+                <slot />
+              </article>
+            </div>
+            {
+              showToc && (
+                <aside class="hidden w-52 shrink-0 lg:block">
+                  <div class="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
+                    <p class="kdc-toc-title">On this page</p>
+                    <nav aria-label="On this page">
+                      <ul class="kdc-toc-list">
+                        {headings.map((heading) => (
+                          <li class:list={[heading.depth === 3 && 'is-h3']}>
+                            <a href={`#${heading.slug}`} data-kdc-toc-link={heading.slug}>
+                              {heading.text}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </nav>
+                  </div>
+                </aside>
+              )
+            }
           </div>
         </main>
         <Footer config={config} />
@@ -126,5 +182,57 @@ const drawerId = 'kdc-drawer';
       </div>
     </div>
     <script is:inline set:html={toggleRelevanceScript} />
+    <script>
+      const links = [
+        ...document.querySelectorAll<HTMLAnchorElement>('[data-kdc-toc-link]'),
+      ];
+      if (links.length > 0) {
+        const bySlug = new Map<string, HTMLAnchorElement[]>();
+        for (const link of links) {
+          const slug = link.dataset.kdcTocLink ?? '';
+          const list = bySlug.get(slug) ?? [];
+          list.push(link);
+          bySlug.set(slug, list);
+        }
+
+        const targets = [...bySlug.keys()]
+          .map((slug) => document.getElementById(slug))
+          .filter((element): element is HTMLElement => element !== null);
+
+        let activeSlug = '';
+        const setActive = (slug: string) => {
+          if (slug === activeSlug) return;
+          activeSlug = slug;
+          for (const link of links) link.removeAttribute('aria-current');
+          for (const link of bySlug.get(slug) ?? []) {
+            link.setAttribute('aria-current', 'location');
+          }
+        };
+
+        const update = () => {
+          const threshold = 96;
+          let current = targets[0]?.id ?? '';
+          for (const target of targets) {
+            if (target.getBoundingClientRect().top <= threshold) current = target.id;
+            else break;
+          }
+          setActive(current);
+        };
+
+        let ticking = false;
+        const onScroll = () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            ticking = false;
+            update();
+          });
+        };
+
+        update();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
+      }
+    </script>
   </body>
 </html>

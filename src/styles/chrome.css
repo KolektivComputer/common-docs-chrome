@@ -110,6 +110,10 @@ html {
 
 /* ---- Prose typography ---- */
 
+.kdc-prose :where(h2, h3, h4) {
+  scroll-margin-top: 5.5rem;
+}
+
 .kdc-prose :where(h2, h3) {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
@@ -156,10 +160,17 @@ html {
   font-weight: 600;
 }
 
+/* Plain Markdown tables get no wrapper element, so the table itself is the
+ * scroll box (GitHub's pattern). Scrolling stays inside the table, never the
+ * page. */
 .kdc-prose :where(table) {
-  width: 100%;
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
   margin: 1.25rem 0 1.5rem;
   font-size: 0.9rem;
+  border-collapse: collapse;
 }
 
 .kdc-prose :where(th, td) {
@@ -167,6 +178,7 @@ html {
   border-bottom: var(--border) solid var(--color-base-300);
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
 }
 
 .kdc-prose :where(th) {
@@ -175,11 +187,167 @@ html {
   color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
 }
 
+/* Markdown heuristic: everything except the last column is a key/type/default
+ * column, so it shrinks to content and never wraps. The last column is prose
+ * and wraps at a comfortable measure. `DocsTable` opts out via `.kdc-table`. */
+.kdc-prose
+  :where(
+    table:not(.kdc-table) th:not(:last-child),
+    table:not(.kdc-table) td:not(:last-child)
+  ) {
+  width: 1%;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.kdc-prose :where(table:not(.kdc-table) th:last-child, table:not(.kdc-table) td:last-child) {
+  min-width: 16ch;
+  max-width: 48ch;
+  white-space: normal;
+}
+
+/* Component tables control each column explicitly. */
+.kdc-table {
+  display: table;
+  width: 100%;
+  max-width: none;
+  overflow: visible;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.kdc-table__cell--narrow {
+  width: 1%;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.kdc-table__cell--prose {
+  min-width: 16ch;
+  max-width: 48ch;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.kdc-table__cell--center {
+  text-align: center;
+}
+
+.kdc-table__cell--right {
+  text-align: right;
+}
+
+@media (min-width: 640px) {
+  .kdc-prose :where(
+      table:not(.kdc-table) th:last-child,
+      table:not(.kdc-table) td:last-child
+    ),
+  .kdc-table__cell--prose {
+    min-width: 20ch;
+  }
+}
+
+.kdc-table-wrap {
+  max-width: 100%;
+  margin: 1.25rem 0 1.5rem;
+  overflow-x: auto;
+}
+
+.kdc-table caption {
+  caption-side: bottom;
+  padding-top: 0.5rem;
+  color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+/* ---- Overview cards ---- */
+
+/* `not-prose` only works with @tailwindcss/typography, which this package does
+ * not install, so the prose resets are explicit here. */
+.kdc-prose :where(.kdc-card-grid) {
+  list-style: none;
+  padding-left: 0;
+  margin: 1.25rem 0 1.5rem;
+}
+
+.kdc-prose :where(.kdc-card-grid a) {
+  color: var(--color-base-content);
+  text-decoration: none;
+}
+
+.kdc-prose :where(.kdc-card-grid a:hover, .kdc-card-grid a:focus-visible) {
+  text-decoration: none;
+}
+
+.kdc-prose :where(.kdc-card-grid p) {
+  margin: 0;
+}
+
+/* ---- Table of contents ---- */
+
+.kdc-toc-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+}
+
+.kdc-toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0 0 0 0.75rem;
+  border-left: var(--border) solid var(--color-base-300);
+  list-style: none;
+}
+
+.kdc-toc-list a {
+  display: block;
+  padding: 0.3rem 0.25rem;
+  color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+  font-size: 0.825rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.kdc-toc-list a:hover {
+  color: var(--color-base-content);
+}
+
+.kdc-toc-list a[aria-current='location'] {
+  color: var(--color-base-content);
+  font-weight: 500;
+}
+
+.kdc-toc-list li.is-h3 a {
+  padding-left: 1rem;
+  font-size: 0.78rem;
+}
+
 .kdc-prose :where(blockquote) {
   margin: 1.25rem 0;
   padding-left: 1rem;
   border-left: var(--border) solid var(--color-base-300);
   color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+
+/* ---- Search dialog ---- */
+
+/* daisyUI 5.7 nests `.modal-box { scale: .95 }` deeper than the `[open]`
+ * rule, so an open `<dialog class="modal">` never reaches full scale. Restore
+ * it so the mobile full-screen layout actually fills the viewport. */
+#kdc-search[open] > .modal-box {
+  scale: 1;
+}
+
+/* iOS Safari zooms a focused field below 16px. Keep the input at least 16px
+ * without overriding a consumer's larger root font size. */
+#kdc-search-input {
+  font-size: max(1rem, 16px);
 }
 
 /* ---- Panels toggled by prefs (see `visibilityCss` in core) ---- */

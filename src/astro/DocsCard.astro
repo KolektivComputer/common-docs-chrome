@@ -1,0 +1,51 @@
+---
+import {
+  isExternal,
+  path,
+  type DocsChromeConfig,
+} from '@kolektiv/common-docs-chrome';
+
+interface Props {
+  config: DocsChromeConfig;
+  title: string;
+  description?: string;
+  href: string;
+  /** Inline SVG path data for a 24×24 viewBox, matching `NavItem.icon`. */
+  icon?: string;
+  /** Force external rendering; otherwise inferred from the href. */
+  external?: boolean;
+  class?: string;
+}
+
+const { config, title, description, href, icon, class: className } = Astro.props;
+const external = Astro.props.external ?? isExternal(href);
+const resolvedHref = external ? href : path(href, config.base);
+---
+
+<a
+  href={resolvedHref}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noreferrer' : undefined}
+  class:list={[
+    'group flex h-full flex-col gap-2 rounded-box border-2 border-base-300 bg-base-100 p-5 no-underline transition-colors hover:border-primary hover:bg-base-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+    className,
+  ]}
+>
+  {icon && (
+    <svg
+      viewBox="0 0 24 24"
+      class="size-5 shrink-0 fill-none stroke-current text-primary"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d={icon} />
+    </svg>
+  )}
+  <span class="font-display text-lg font-medium text-base-content">{title}</span>
+  {description && (
+    <span class="text-sm leading-relaxed text-base-content/70">{description}</span>
+  )}
+  <slot />
+</a>

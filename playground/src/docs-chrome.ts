@@ -54,6 +54,11 @@ export const docs = defineDocsChrome({
           description: 'Run the server locally',
           icon: 'M12 3v12m0 0 4-4m-4 4-4-4M5 21h14',
         },
+        {
+          label: 'Configuration',
+          href: '/docs/config',
+          description: 'Server and deployment options',
+        },
         { label: 'Theming', href: '/docs/theming', description: 'Themes and code blocks' },
       ],
     },
