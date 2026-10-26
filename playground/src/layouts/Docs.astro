@@ -11,6 +11,8 @@ const { frontmatter } = Astro.props;
   config={docs}
   title={frontmatter.title ?? 'Docs'}
   description={frontmatter.description ?? docs.description}
+  headings={Astro.props.headings}
+  toc={frontmatter.toc ?? Astro.props.toc}
 >
   <slot />
 </DocsLayout>

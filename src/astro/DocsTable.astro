@@ -1,0 +1,52 @@
+---
+export interface DocsTableColumn {
+  label: string;
+  /** `narrow` shrinks to content and never wraps; `prose` wraps at 16–48ch. */
+  width?: 'narrow' | 'prose';
+  /** Optional text alignment for the column. */
+  align?: 'left' | 'center' | 'right';
+}
+
+interface Props {
+  columns: DocsTableColumn[];
+  rows: (string | number)[][];
+  caption?: string;
+  class?: string;
+}
+
+const { columns, rows, caption, class: className } = Astro.props;
+
+function cellClass(column: DocsTableColumn): string {
+  const classes = [`kdc-table__cell--${column.width ?? 'prose'}`];
+  if (column.align) classes.push(`kdc-table__cell--${column.align}`);
+  return classes.join(' ');
+}
+---
+
+<div class:list={['kdc-table-wrap', className]}>
+  <table class="kdc-table">
+    {caption && <caption>{caption}</caption>}
+    <thead>
+      <tr>
+        {
+          columns.map((column) => (
+            <th scope="col" class={cellClass(column)}>
+              {column.label}
+            </th>
+          ))
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            {columns.map((column, index) => (
+              <td class={cellClass(column)}>{row[index] ?? ''}</td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

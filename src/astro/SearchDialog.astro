@@ -55,20 +55,15 @@ const starters = entries.slice(0, 6);
   <kbd class="kbd kbd-sm ml-auto hidden sm:inline" data-kdc-search-hotkey>Ctrl K</kbd>
 </button>
 
-<dialog id="kdc-search" class="modal" aria-label="Search documentation">
-  <div class="modal-box flex max-h-[min(36rem,calc(100dvh-4rem))] flex-col overflow-hidden p-0 sm:max-w-xl">
-    <form method="dialog" class="absolute right-3 top-3 z-10">
-      <button type="submit" class="btn btn-ghost btn-square btn-sm" aria-label="Close search">
-        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path d="M6 6l12 12M18 6L6 18"></path>
-        </svg>
-      </button>
-    </form>
-    <div class="border-b-2 border-base-300 px-4 py-3 pr-14">
+<dialog id="kdc-search" class="modal max-sm:p-0" aria-label="Search documentation">
+  <div
+    class="modal-box flex max-h-[min(36rem,calc(100dvh-4rem))] flex-col overflow-hidden p-0 max-sm:m-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-none max-sm:rounded-none sm:max-w-xl"
+  >
+    <div class="flex items-center gap-2 border-b-2 border-base-300 px-4 py-2">
       <label class="sr-only" for="kdc-search-input">Search docs</label>
       <input
         id="kdc-search-input"
-        class="input input-ghost h-11 w-full px-0 text-base"
+        class="input input-ghost h-11 min-w-0 flex-1 px-0 text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
         type="search"
         placeholder="Search the docs"
         autocomplete="off"
@@ -76,6 +71,13 @@ const starters = entries.slice(0, 6);
         spellcheck="false"
         data-kdc-search-input
       />
+      <form method="dialog" class="shrink-0">
+        <button type="submit" class="btn btn-ghost btn-square btn-sm" aria-label="Close search">
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </button>
+      </form>
     </div>
     <div class="min-h-0 flex-1 overflow-y-auto px-2 py-2" data-kdc-search-results>
       <p class="px-3 py-2 font-mono text-xs uppercase tracking-widest text-base-content/50">
@@ -86,8 +88,8 @@ const starters = entries.slice(0, 6);
           <li>
             <a href={entry.href} data-kdc-search-hit>
               <span class="flex min-w-0 flex-col gap-0.5">
-                <span class="font-medium">{entry.title}</span>
-                <span class="truncate text-xs text-base-content/55">
+                <span class="text-base font-medium">{entry.title}</span>
+                <span class="truncate text-sm text-base-content/55">
                   {entry.category}
                   {entry.description ? ` · ${entry.description}` : ''}
                 </span>
@@ -135,7 +137,7 @@ const starters = entries.slice(0, 6);
     const meta = entry.description
       ? `${escapeHtml(entry.category)} · ${escapeHtml(entry.description)}`
       : escapeHtml(entry.category);
-    return `<li><a href="${escapeHtml(entry.href)}" data-kdc-search-hit><span class="flex min-w-0 flex-col gap-0.5"><span class="font-medium">${escapeHtml(entry.title)}</span><span class="truncate text-xs text-base-content/55">${meta}</span></span></a></li>`;
+    return `<li><a href="${escapeHtml(entry.href)}" data-kdc-search-hit><span class="flex min-w-0 flex-col gap-0.5"><span class="text-base font-medium">${escapeHtml(entry.title)}</span><span class="truncate text-sm text-base-content/55">${meta}</span></span></a></li>`;
   }
 
   function render(entries: Entry[], empty: boolean): void {

@@ -5,12 +5,23 @@ import { docs } from '../../docs-chrome';
 import '../../styles/global.css';
 ---
 
-<DocsLayout config={docs} title="Install" description="Run the Kalendee server locally.">
+<DocsLayout
+  config={docs}
+  title="Install"
+  description="Run the Kalendee server locally."
+  toc={false}
+>
   <h1>Install</h1>
   <p>Run the server with Gradle:</p>
   <pre class="astro-code"><code>./gradlew :server:run</code></pre>
   <p>
     Then open <a href="http://localhost:8080">localhost:8080</a>. The default theme
     is <strong>{docs.defaultTheme}</strong>.
+  </p>
+  <h2 id="requirements">Requirements</h2>
+  <p>
+    Install JDK 21 and make sure the working directory is writable: Kalendee keeps
+    its embedded database under <code>data/</code>. This page passes
+    <code>toc=&#123;false&#125;</code>, so no table of contents is rendered.
   </p>
 </DocsLayout>

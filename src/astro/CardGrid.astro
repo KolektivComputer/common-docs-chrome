@@ -1,0 +1,19 @@
+---
+interface Props {
+  /** Column count at `lg`. Default 3; `sm` is always 2, base is 1. */
+  columns?: 2 | 3;
+  class?: string;
+}
+
+const { columns = 3, class: className } = Astro.props;
+---
+
+<div
+  class:list={[
+    'kdc-card-grid not-prose grid gap-4',
+    columns === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3',
+    className,
+  ]}
+>
+  <slot />
+</div>

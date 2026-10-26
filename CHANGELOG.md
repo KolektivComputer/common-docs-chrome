@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `DocsTable` (`columns`/`rows`, narrow + prose columns, optional caption) and
+  default Markdown table styles that scroll inside the table instead of the page.
+- `CardGrid` and `DocsCard` for overview pages, with prose resets so cards have
+  no list markers or underlined text.
+- Auto-generated "On this page" table of contents in `DocsLayout`: sticky
+  desktop sidebar at `lg`, collapsible block below `lg`, active-section
+  highlight, `headings` prop and `toc={false}` opt-out.
+
+### Fixed
+
+- `SearchDialog` header is one row with an inline close button, a themed focus
+  ring replaces the default outline, result titles/breadcrumbs are readable,
+  the input is at least 16px to stop iOS zoom, and the dialog is full-screen
+  below 640px.
+- Tables with many narrow columns no longer overflow or squeeze prose cells to
+  one word per line.
+- Cards no longer inherit prose bullets or underlines.
+
 ## [0.0.1] - 2026-10-26
 
 ### Changed

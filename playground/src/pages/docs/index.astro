@@ -1,18 +1,93 @@
 ---
 import DocsLayout from '@kolektiv/common-docs-chrome/astro/DocsLayout.astro';
+import CardGrid from '@kolektiv/common-docs-chrome/astro/CardGrid.astro';
+import DocsCard from '@kolektiv/common-docs-chrome/astro/DocsCard.astro';
+import DocsTable from '@kolektiv/common-docs-chrome/astro/DocsTable.astro';
+import type { TocHeading } from '@kolektiv/common-docs-chrome';
 
 import { docs } from '../../docs-chrome';
 import '../../styles/global.css';
+
+const headings: TocHeading[] = [
+  { depth: 2, slug: 'start-here', text: 'Start here' },
+  { depth: 2, slug: 'deployment-options', text: 'Deployment options' },
+  {
+    depth: 2,
+    slug: 'language-and-framework-panels',
+    text: 'Language and framework panels',
+  },
+];
 ---
 
-<DocsLayout config={docs} title="Overview">
+<DocsLayout config={docs} title="Overview" headings={headings}>
   <h1>Kalendee documentation</h1>
   <p>
     Welcome to the playground. The sidebar, navbar, theme picker and search dialog
     above are all components from
     <code>@kolektiv/common-docs-chrome</code>.
   </p>
-  <h2>Language and framework panels</h2>
+
+  <h2 id="start-here">Start here</h2>
+  <CardGrid columns={3}>
+    <DocsCard
+      config={docs}
+      title="Install"
+      description="Run the Kalendee server locally with Gradle and open the web client."
+      href="/docs/install"
+      icon="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"
+    />
+    <DocsCard
+      config={docs}
+      title="Configuration"
+      description="Deployment, database and reverse-proxy settings with defaults."
+      href="/docs/config"
+      icon="M4 7h16M4 12h10M4 17h7"
+    />
+    <DocsCard
+      config={docs}
+      title="Theming"
+      description="Site themes, code themes and the theme picker."
+      href="/docs/theming"
+      icon="M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 0-4h-1a2 2 0 0 1 0-4h3a3 3 0 0 0 0-6h-3z"
+    />
+  </CardGrid>
+
+  <h2 id="deployment-options">Deployment options</h2>
+  <p>
+    This table is rendered with <code>DocsTable</code>. The key, type and default
+    columns are marked <code>narrow</code>; the meaning column is <code>prose</code>.
+  </p>
+  <DocsTable
+    caption="Common deployment settings and their defaults."
+    columns={[
+      { label: 'Key', width: 'narrow' },
+      { label: 'Type', width: 'narrow' },
+      { label: 'Default', width: 'narrow' },
+      { label: 'Meaning', width: 'prose' },
+    ]}
+    rows={[
+      [
+        'ktor.deployment.port',
+        'Int',
+        '8080',
+        'TCP port the HTTP server binds to. Change it when another process already owns the default port.',
+      ],
+      [
+        'ktor.deployment.host',
+        'String',
+        '0.0.0.0',
+        'Interface the server binds to. Use 127.0.0.1 when a local reverse proxy is the only client.',
+      ],
+      [
+        'ktor.deployment.workers',
+        'Int',
+        '4',
+        'Request worker threads. Keep it at or below the available CPU cores so sync traffic does not oversubscribe them.',
+      ],
+    ]}
+  />
+
+  <h2 id="language-and-framework-panels">Language and framework panels</h2>
   <p>
     The pickers switch <code>data-lang</code> and <code>data-framework</code> on the
     root element. Panels below use the convention expected by

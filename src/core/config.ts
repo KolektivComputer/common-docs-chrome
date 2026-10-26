@@ -21,6 +21,16 @@ export interface NavSection {
   items: NavItem[];
 }
 
+/**
+ * Minimal heading shape shared by Astro's `MarkdownHeading` and hand-authored
+ * table-of-contents entries. `DocsLayout` renders depth 2 and 3 headings.
+ */
+export interface TocHeading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
 export interface FooterLink {
   label: string;
   href: string;
