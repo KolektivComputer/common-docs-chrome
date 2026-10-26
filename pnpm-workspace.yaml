@@ -3,5 +3,5 @@ packages:
 allowBuilds:
   esbuild: true
 minimumReleaseAgeExclude:
-  - '@kolektiv/themes@0.0.1-SNAPSHOT.2'
-  - '@kolektiv/brand-core@0.1.0'
+  - '@kolektiv/themes@0.0.1'
+  - '@kolektiv/brand-core@0.1.3'

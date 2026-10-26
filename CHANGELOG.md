@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.1] - 2026-10-26
+
+### Changed
+
+- First stable cut on `repo.kolektiv.computer`; depends on `@kolektiv/brand-core` ^0.1.3 and `@kolektiv/themes` ^0.0.1.
+
 ## [0.0.1-SNAPSHOT.10] - 2026-09-27
 
 ### Changed
